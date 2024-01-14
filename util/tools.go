@@ -2,9 +2,12 @@ package util
 
 import (
 	"blog/constant"
+	"fmt"
 	"html"
 	"os"
 	"path"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func PublicDir() string {
@@ -16,6 +19,21 @@ func EscapeStrings(strings ...*string) {
 	for _, str := range strings {
 		*str = html.EscapeString(*str)
 	}
+}
+
+func Validate(data any) []string {
+	validate := validator.New()
+	errs := validate.Struct(data)
+	message := make([]string, 0)
+
+	if errs != nil {
+		for _, err := range errs.(validator.ValidationErrors) {
+			newMessage := fmt.Sprintf("%v: %v", err.Field(), err.Tag())
+			message = append(message, newMessage)
+		}
+	}
+
+	return message
 }
 
 func rootDir() string {
