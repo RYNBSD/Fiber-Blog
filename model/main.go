@@ -56,13 +56,13 @@ func createTable(model any) string {
 			continue
 		}
 
-		sqlOptions := field.Tag.Get("sql")
-		jsonName := field.Tag.Get("json")
+		sql := field.Tag.Get("sql")
+		json := field.Tag.Get("json")
 
 		if i == numFiled-1 {
-			sql += fmt.Sprintf("%v %v)", jsonName, sqlOptions)
+			sql += fmt.Sprintf("%v %v)", json, sql)
 		} else {
-			sql += fmt.Sprintf("%v %v,", jsonName, sqlOptions)
+			sql += fmt.Sprintf("%v %v,", json, sql)
 		}
 	}
 
