@@ -19,8 +19,8 @@ func SignJwt(id string) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-func VerifyJwt(authorization string) (string, error) {
-	token, err := jwt.Parse(authorization, func (token *jwt.Token) (any, error) {
+func VerifyJwt(key string) (string, error) {
+	token, err := jwt.Parse(key, func (token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
 		}
