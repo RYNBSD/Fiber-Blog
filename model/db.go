@@ -46,3 +46,12 @@ type BlogComments struct {
 	CreatedAt   time.Time `sql:"DATETIME NOT NULL DEFAULT NOW()" json:"createdAt"`
 	UpdatedAt   time.Time `sql:"DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW()" json:"updatedAt"`
 }
+
+type Error struct {
+	Id        int       `sql:"BIGINT PRIMARY KEY" json:"id"`
+	Status    int16     `sql:"INT NOT NULL" json:"status"`
+	Message   string    `sql:"VARCHAR(255) NOT NULL" json:"message"`
+	IsFixed   bool      `sql:"BOOL NOT NULL DEFAULT FALSE" json:"isFixed"`
+	CreatedAt time.Time `sql:"DATETIME NOT NULL DEFAULT NOW()" json:"createdAt"`
+	UpdatedAt time.Time `sql:"DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW()" json:"updatedAt"`
+}

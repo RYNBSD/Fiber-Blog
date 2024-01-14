@@ -1,6 +1,7 @@
 package util
 
 import (
+	"blog/constant"
 	"os"
 	"path"
 )
@@ -13,9 +14,7 @@ func RootDir() string {
 	return dir
 }
 
-const PUBLIC = "public"
-
 func PublicDir() string {
 	root := RootDir()
-	return path.Join(root, PUBLIC)
+	return path.Join(root, constant.PUBLIC)
 }
