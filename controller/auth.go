@@ -13,6 +13,8 @@ func SignUp(c *fiber.Ctx) error {
 		return err
 	}
 
+	util.EscapeStrings(&body.Username, &body.Password)
+
 	picture, err := c.FormFile("picture")
 	if err != nil {
 		return err
