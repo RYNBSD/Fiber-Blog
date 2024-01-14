@@ -20,6 +20,7 @@ func main() {
 		})
 	})
 
+	app.Static("/")
 	model.Init()
 	log.Fatal(app.Listen(":3000"))
 }

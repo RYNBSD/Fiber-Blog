@@ -13,6 +13,11 @@ func SignUp(c *fiber.Ctx) error {
 		return err
 	}
 
+	picture, err := c.FormFile("picture")
+	if err != nil {
+		return err
+	}
+
 	return c.SendStatus(fiber.StatusCreated)
 }
 
