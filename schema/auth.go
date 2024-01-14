@@ -3,12 +3,12 @@ package schema
 // Request Body Schema For All Auth Endpoints
 
 type SignUp struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required,min=1"`
+	Email    string `json:"email" validate:"required,min=1,email"`
+	Password string `json:"password" validate:"required,min=8"`
 }
 
 type SignIn struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,min=1,email"`
+	Password string `json:"password" validate:"required,min=8"`
 }

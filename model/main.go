@@ -7,32 +7,38 @@ import (
 	"strings"
 )
 
-func Connect() *sql.DB {
-	db, err := sql.Open("postgres", "")
-	if err != nil {
-		panic(err)
+var DB *sql.DB = nil
+
+func Connect() {
+	if DB == nil {
+		db, err := sql.Open("postgres", "")
+		if err != nil {
+			panic(err)
+		}
+		DB = db
 	}
-	return db
 }
 
-func Close(db *sql.DB) {
-	if err := db.Close(); err != nil {
-		panic(err)
+func Close()  {
+	if DB != nil {
+		if err := DB.Close(); err != nil {
+			panic(err)
+		}
 	}
 }
 
 func Init() {
 	tables := []any{User{}, Blog{}, BlogImages{}, BlogLikes{}, BlogComments{}, Error{}}
 
-	db := Connect()
-	defer Close(db)
+	Connect()
+	defer Close()
 
 	for _, table := range tables {
-		createTable(db, table)
+		createTable(table)
 	}
 }
 
-func createTable(db *sql.DB, model any) {
+func createTable(model any) {
 	t := reflect.TypeOf(model)
 	isModelPtr := reflect.TypeOf(model).Kind() == reflect.Ptr
 
@@ -76,7 +82,7 @@ func createTable(db *sql.DB, model any) {
 		}
 	}
 
-	if _, err := db.Exec(sql); err != nil {
+	if _, err := DB.Exec(sql); err != nil {
 		panic(err);
 	}
 }

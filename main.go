@@ -40,7 +40,7 @@ func main() {
 				message = e
 			default:
 				status = fiber.StatusInternalServerError
-				message = fmt.Sprintf("%v", err)
+				message = fmt.Sprintf("%v", e)
 			}
 
 			
