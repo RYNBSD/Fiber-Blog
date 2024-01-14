@@ -1,28 +1,38 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strings"
 )
 
-func Connect() {
-
+func Connect() *sql.DB {
+	db, err := sql.Open("postgres", "")
+	if err != nil {
+		panic(err)
+	}
+	return db
 }
 
-func Close() {
-
+func Close(db *sql.DB) {
+	if err := db.Close(); err != nil {
+		panic(err)
+	}
 }
 
 func Init() {
 	tables := []any{User{}, Blog{}, BlogImages{}, BlogLikes{}, BlogComments{}, Error{}}
 
+	db := Connect()
+	defer Close(db)
+
 	for _, table := range tables {
-		createTable(table)
+		createTable(db, table)
 	}
 }
 
-func createTable(model any) string {
+func createTable(db *sql.DB, model any) {
 	t := reflect.TypeOf(model)
 	isModelPtr := reflect.TypeOf(model).Kind() == reflect.Ptr
 
@@ -66,5 +76,7 @@ func createTable(model any) string {
 		}
 	}
 
-	return sql
+	if _, err := db.Exec(sql); err != nil {
+		panic(err);
+	}
 }
