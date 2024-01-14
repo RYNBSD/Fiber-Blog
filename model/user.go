@@ -38,7 +38,7 @@ func SelectUser(id string) {
 	defer rows.Close()
 
 }
-func ProfileUser() {
+func ProfileUser(id string) {
 	Connect()
 	sql := ``
 
@@ -47,22 +47,4 @@ func ProfileUser() {
 		panic(err)
 	}
 	defer rows.Close()
-}
-
-func LikeBlog(userId string, blogId string) {
-	Connect()
-	sql := `INSERT INTO "blogLikes" (likerId, blogId) VALUES (?, ?)`
-
-	if _, err := DB.Exec(sql, userId, blogId); err != nil {
-		panic(err)
-	}
-}
-
-func CommentBlog(userId string, blogId string, comment string) {
-	Connect()
-	sql := `INSERT INTO "blogComments" (likerId, blogId, comment) VALUES (?, ?, ?)`
-
-	if _, err := DB.Exec(sql, userId, blogId, comment); err != nil {
-		panic(err)
-	}
 }
