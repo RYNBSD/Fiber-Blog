@@ -3,6 +3,7 @@ package main
 import (
 	"blog/model"
 	"blog/router"
+	"blog/util"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,7 +21,7 @@ func main() {
 		})
 	})
 
-	app.Static("/")
+	app.Static("/", util.PublicDir())
 	model.Init()
 	log.Fatal(app.Listen(":3000"))
 }
