@@ -1,6 +1,7 @@
 package model
 
 import (
+	_ "github.com/lib/pq"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -11,11 +12,15 @@ var DB *sql.DB = nil
 
 func Connect() {
 	if DB == nil {
-		db, err := sql.Open("postgres", "")
+		db, err := sql.Open("postgres", "postgres:password@tcp(127.0.0.1:5432)/blog")
 		if err != nil {
 			panic(err)
 		}
 		DB = db
+	} else {
+		if err := DB.Ping(); err != nil {
+			panic(err)
+		}
 	}
 }
 
