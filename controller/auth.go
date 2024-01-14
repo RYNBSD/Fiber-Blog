@@ -29,6 +29,8 @@ func SignIn(c *fiber.Ctx) error {
 		return err
 	}
 
+	util.EscapeStrings(&body.Password)
+
 	return c.SendStatus(fiber.StatusOK)
 }
 

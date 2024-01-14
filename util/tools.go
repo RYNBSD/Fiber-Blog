@@ -7,7 +7,18 @@ import (
 	"path"
 )
 
-func RootDir() string {
+func PublicDir() string {
+	root := rootDir()
+	return path.Join(root, constant.PUBLIC)
+}
+
+func EscapeStrings(strings ...*string) {
+	for _, str := range strings {
+		*str = html.EscapeString(*str)
+	}
+}
+
+func rootDir() string {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -15,13 +26,3 @@ func RootDir() string {
 	return dir
 }
 
-func PublicDir() string {
-	root := RootDir()
-	return path.Join(root, constant.PUBLIC)
-}
-
-func EscapeStrings(strings ...*string) {
-	for i, str := range strings {
-		*strings[i] = html.EscapeString(*str)
-	}
-}
