@@ -16,35 +16,37 @@ import (
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			// status := 0
+			// message := ""
+
+			// switch e := err.(type) {
+			// case error:
+			// 	status = fiber.StatusInternalServerError
+			// 	message = e.Error()
+			// case fiber.Error:
+			// 	status = e.Code
+			// 	message = e.Message
+			// case string:
+			// 	status = fiber.StatusInternalServerError
+			// 	message = e
+			// default:
+			// 	status = fiber.StatusInternalServerError
+			// 	message = fmt.Sprintf("%v", e)
+			// }
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": err.Error(),
+			})
+		},
+	})
 	app.Use(cors.New())
 	app.Use(limiter.New())
 	app.Use(logger.New())
 	app.Use(helmet.New())
-	// If error is Internal use panic
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
-		StackTraceHandler: func(c *fiber.Ctx, err any) {
-			status := 0
-			message := ""
-
-			switch e := err.(type) {
-			case error:
-				status = fiber.StatusInternalServerError
-				message = e.Error()
-			case fiber.Error:
-				status = e.Code
-				message = e.Message
-			case string:
-				status = fiber.StatusInternalServerError
-				message = e
-			default:
-				status = fiber.StatusInternalServerError
-				message = fmt.Sprintf("%v", e)
-			}
-
-			
-		},
 	}))
 
 	router.Router(app)

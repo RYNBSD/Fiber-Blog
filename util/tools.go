@@ -21,15 +21,14 @@ func EscapeStrings(strings ...*string) {
 	}
 }
 
-func Validate(data any) []string {
+func Validate(data any) string {
 	validate := validator.New()
 	errs := validate.Struct(data)
-	message := make([]string, 0)
+	message := ""
 
 	if errs != nil {
 		for _, err := range errs.(validator.ValidationErrors) {
-			newMessage := fmt.Sprintf("%v: %v", err.Field(), err.Tag())
-			message = append(message, newMessage)
+			message += fmt.Sprintf("%v: %v;", err.Field(), err.Tag())
 		}
 	}
 

@@ -13,6 +13,11 @@ func SignUp(c *fiber.Ctx) error {
 		return err
 	}
 
+	message := util.Validate(body)
+	if len(message) > 0 {
+		return fiber.NewError(fiber.StatusBadRequest, message)
+	}
+
 	util.EscapeStrings(&body.Username, &body.Password)
 
 	picture, err := c.FormFile("picture")
@@ -27,6 +32,11 @@ func SignIn(c *fiber.Ctx) error {
 	var body *schema.SignIn
 	if err := c.BodyParser(&body); err != nil {
 		return err
+	}
+
+	message := util.Validate(body)
+	if len(message) > 0 {
+		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
 
 	util.EscapeStrings(&body.Password)
