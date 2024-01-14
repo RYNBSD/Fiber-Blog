@@ -25,24 +25,24 @@ type Blog struct {
 }
 
 type BlogImages struct {
-	Id        int `sql:"BIGINT PRIMARY KEY" json:"id"`
-	Image     string
-	BlogId    uuid.UUID
+	Id        int       `sql:"BIGINT PRIMARY KEY" json:"id"`
+	Image     string    `sql:"VARCHAR(100) NOT NULL" json:"image"`
+	BlogId    uuid.UUID `sql:"VARCHAR(36) NOT NULL REFERENCES blog(id)" json:"blogId"`
 	CreatedAt time.Time `sql:"DATETIME NOT NULL DEFAULT NOW()" json:"createdAt"`
 }
 
 type BlogLikes struct {
 	Id        int       `sql:"BIGINT PRIMARY KEY" json:"id"`
-	BlogId    uuid.UUID `sql:"VARCHAR(36) NOT NULL REFERENCES " json:"blogId"`
-	LikerId   uuid.UUID `sql:"VARCHAR(36) NOT NULL REFERENCES " json:"likerId"`
+	BlogId    uuid.UUID `sql:"VARCHAR(36) NOT NULL REFERENCES blog(id)" json:"blogId"`
+	LikerId   uuid.UUID `sql:"VARCHAR(36) NOT NULL REFERENCES user(id)" json:"likerId"`
 	CreatedAt time.Time `sql:"DATETIME NOT NULL DEFAULT NOW()" json:"createdAt"`
 }
 
 type BlogComments struct {
-	Id        int `sql:"BIGINT PRIMARY KEY" json:"id"`
-	Comment   string
-	BlogId    uuid.UUID
-	CommenterId   uuid.UUID
-	CreatedAt time.Time `sql:"DATETIME NOT NULL DEFAULT NOW()" json:"createdAt"`
-	UpdatedAt time.Time `sql:"DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW()" json:"updatedAt"`
+	Id          int       `sql:"BIGINT PRIMARY KEY" json:"id"`
+	Comment     string    `sql:"VARCHAR(255) NOT NULL" json:"comment"`
+	BlogId      uuid.UUID `sql:"VARCHAR(36) NOT NULL REFERENCES blog(id)" json:"blogId"`
+	CommenterId uuid.UUID `sql:"VARCHAR(36) NOT NULL REFERENCES user(id)" json:"commenterId"`
+	CreatedAt   time.Time `sql:"DATETIME NOT NULL DEFAULT NOW()" json:"createdAt"`
+	UpdatedAt   time.Time `sql:"DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW()" json:"updatedAt"`
 }
