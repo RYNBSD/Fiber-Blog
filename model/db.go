@@ -20,6 +20,7 @@ type Blog struct {
 	Id          uuid.UUID `sql:"VARCHAR(36) PRIMARY KEY" json:"id"`
 	Title       string    `sql:"VARCHAR(255) NOT NULL" json:"title"`
 	Description string    `sql:"VARCHAR(1000) NULL" json:"description"`
+	BloggerId string `sql:"VARCHAR(36) NOT NULL REFERENCES user(id)" json:"bloggerId"`
 	CreatedAt   time.Time `sql:"DATETIME NOT NULL DEFAULT NOW()" json:"createdAt"`
 	UpdatedAt   time.Time `sql:"DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW()" json:"updatedAt"`
 }

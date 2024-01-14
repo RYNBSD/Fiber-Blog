@@ -32,7 +32,10 @@ func createTable(model any) string {
 	} else {
 		structName = t.Name()
 	}
-	structName = strings.ToLower(structName)
+
+	firstChar := string(structName[0])
+	lowerCaseFirstChar := strings.ToLower(firstChar)
+	structName = strings.Replace(structName, firstChar, lowerCaseFirstChar, 1)
 
 	sql := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %v (", structName)
 
