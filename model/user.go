@@ -35,16 +35,34 @@ func SelectUser(id string) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func LikeBlog() {
+	defer rows.Close()
 
 }
-
-func CommentBlog() {
-
-}
-
 func ProfileUser() {
+	Connect()
+	sql := ``
 
+	rows, err := DB.Query(sql, id)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+}
+
+func LikeBlog(userId string, blogId string) {
+	Connect()
+	sql := `INSERT INTO "blogLikes" (likerId, blogId) VALUES (?, ?)`
+
+	if _, err := DB.Exec(sql, userId, blogId); err != nil {
+		panic(err)
+	}
+}
+
+func CommentBlog(userId string, blogId string, comment string) {
+	Connect()
+	sql := `INSERT INTO "blogComments" (likerId, blogId, comment) VALUES (?, ?, ?)`
+
+	if _, err := DB.Exec(sql, userId, blogId, comment); err != nil {
+		panic(err)
+	}
 }
