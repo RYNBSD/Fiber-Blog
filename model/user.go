@@ -38,6 +38,7 @@ func SelectUser(id string) {
 	defer rows.Close()
 
 }
+
 func ProfileUser(id string) {
 	Connect()
 	const sql = ``
