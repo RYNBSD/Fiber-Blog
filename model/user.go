@@ -2,7 +2,7 @@ package model
 
 func CreateUser(user User) {
 	Connect()
-	sql := `INSERT INTO user(username, email, password, picture) VALUES (?, ?, ?, ?)`
+	const sql = `INSERT INTO user(username, email, password, picture) VALUES (?, ?, ?, ?)`
 
 	if _, err := DB.Exec(sql, user.Username, user.Email, user.Password, user.Picture); err != nil {
 		panic(err)
@@ -11,7 +11,7 @@ func CreateUser(user User) {
 
 func UpdateUser(user User) {
 	Connect()
-	sql := `UPDATE user SET username=?, email=?, password=?, picture=? WHERE id=?`
+	const sql = `UPDATE user SET username=?, email=?, password=?, picture=? WHERE id=?`
 
 	if _, err := DB.Exec(sql, user.Username, user.Email, user.Password, user.Picture, user.Id); err != nil {
 		panic(err)
@@ -20,7 +20,7 @@ func UpdateUser(user User) {
 
 func DeleteUser(id string) {
 	Connect()
-	sql := `DELETE FROM user WHERE id=?`
+	const sql = `DELETE FROM user WHERE id=?`
 
 	if _, err := DB.Exec(sql, id); err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func DeleteUser(id string) {
 
 func SelectUser(id string) {
 	Connect()
-	sql := ``
+	const sql = ``
 
 	rows, err := DB.Query(sql, id)
 	if err != nil {
@@ -40,7 +40,7 @@ func SelectUser(id string) {
 }
 func ProfileUser(id string) {
 	Connect()
-	sql := ``
+	const sql = ``
 
 	rows, err := DB.Query(sql, id)
 	if err != nil {
