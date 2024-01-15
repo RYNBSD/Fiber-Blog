@@ -1,9 +1,11 @@
 package model
 
-import "sync"
-
-func CreateBlog(blog Blog) {
+func CreateBlog(blog Blog, images ...string) {
 	Connect()
+	if images != nil {
+		createImages(blog.Id, images...)
+	}
+
 	const sql = `INSERT INTO blog (title, description, "bloggerId") VALUES (?, ?, ?)`
 
 	if _, err := DB.Exec(sql, blog.Title, blog.Description, blog.BloggerId); err != nil {
@@ -15,26 +17,7 @@ func UpdateBlog(blog Blog, images ...string) {
 	Connect()
 
 	if images != nil {
-		wg := sync.WaitGroup{}
-
-		const sql = `DELETE FROM "blogImages" WHERE "blogId"=?`
-		if _, err := DB.Exec(sql, blog.Id); err != nil {
-			panic(err)
-		}
-
-		for _, image := range images {
-			wg.Add(1)
-
-			go func(image string) {
-				defer wg.Done()
-				const sql = `INSERT INTO "blogImages" (image, "blogId") VALUES (?, ?)`
-
-				if _, err := DB.Exec(sql, image, blog.Id); err != nil {
-					panic(err)
-				}
-			}(image)
-		}
-		wg.Wait()
+		createImages(blog.Id, images...)
 	}
 
 	const sql = ``
