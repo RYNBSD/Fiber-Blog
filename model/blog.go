@@ -34,7 +34,7 @@ func UpdateBlog(blog Blog, images ...string) {
 				}
 			}(image)
 		}
-		wg.Done()
+		wg.Wait()
 	}
 
 	const sql = ``
