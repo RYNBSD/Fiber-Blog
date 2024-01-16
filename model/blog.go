@@ -2,10 +2,7 @@ package model
 
 func CreateBlog(blog Blog, images ...string) {
 	Connect()
-	if images != nil {
-		createImages(blog.Id, images...)
-	}
-
+	createImages(blog.Id, images...)
 	const sql = `INSERT INTO blog (title, description, "bloggerId") VALUES (?, ?, ?)`
 
 	if _, err := DB.Exec(sql, blog.Title, blog.Description, blog.BloggerId); err != nil {
@@ -15,11 +12,9 @@ func CreateBlog(blog Blog, images ...string) {
 
 func UpdateBlog(blog Blog, images ...string) {
 	Connect()
-	if images != nil {
-		createImages(blog.Id, images...)
-	}
+	createImages(blog.Id, images...)
+	const sql = `UPDATE blog`
 
-	const sql = ``
 	if _, err := DB.Exec(sql); err != nil {
 		panic(err)
 	}
@@ -27,8 +22,29 @@ func UpdateBlog(blog Blog, images ...string) {
 
 func DeleteBlog(id string) {
 	Connect()
-	const sql = `DELETE FROM blog WHERE id=?`
 
+	const sql1 = `SELECT image from "blogImages" WHERE id=?`
+	if rows, err := DB.Query(sql1, id); err != nil {
+		panic(err)
+	} else {
+		defer rows.Close()
+		images := make([]string, 0)
+
+		for rows.Next() {
+			image := ""
+			if err := rows.Scan(&image); err != nil {
+				panic(err)
+			}
+			images = append(images, image)
+		}
+
+		if err := rows.Err(); err != nil {
+			panic(err)
+		}
+		deleteImages(images...)
+	}
+
+	const sql = `DELETE FROM blog WHERE id=?`
 	if _, err := DB.Exec(sql, id); err != nil {
 		panic(err)
 	}

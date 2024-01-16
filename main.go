@@ -35,9 +35,8 @@ func main() {
 			// 	status = fiber.StatusInternalServerError
 			// 	message = fmt.Sprintf("%v", e)
 			// }
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"success": false,
-				"message": err.Error(),
 			})
 		},
 	})
