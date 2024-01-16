@@ -15,7 +15,6 @@ func CreateBlog(blog Blog, images ...string) {
 
 func UpdateBlog(blog Blog, images ...string) {
 	Connect()
-
 	if images != nil {
 		createImages(blog.Id, images...)
 	}
@@ -60,3 +59,7 @@ func NewBlogComment(comment BlogComments) {
 		panic(err)
 	}
 }
+
+func RemoveBlogLike() {}
+
+func RemoveBlogComment() {}

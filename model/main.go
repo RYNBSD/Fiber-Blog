@@ -1,11 +1,13 @@
 package model
 
 import (
-	_ "github.com/lib/pq"
 	"database/sql"
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
+
+	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB = nil
@@ -24,11 +26,12 @@ func Connect() {
 	}
 }
 
-func Close()  {
+func Close() {
 	if DB != nil {
 		if err := DB.Close(); err != nil {
 			panic(err)
 		}
+		DB = nil
 	}
 }
 
@@ -38,9 +41,16 @@ func Init() {
 	Connect()
 	defer Close()
 
+	wg := sync.WaitGroup{}
+
 	for _, table := range tables {
-		createTable(table)
+		wg.Add(1)
+		go func(table any) {
+			defer wg.Done()
+			createTable(table)
+		}(table)
 	}
+	wg.Wait()
 }
 
 func createTable(model any) {
@@ -88,6 +98,6 @@ func createTable(model any) {
 	}
 
 	if _, err := DB.Exec(sql); err != nil {
-		panic(err);
+		panic(err)
 	}
 }
