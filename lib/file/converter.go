@@ -10,11 +10,10 @@ import (
 )
 
 type IConverter interface {
-	Convert() []byte
+	Convert() ([][]byte, bool)
 
 	verifyImages()
-	// Converted Images, Number of Converted Images
-	toWebp() ([][]byte, bool)
+	toWebp() [][]byte
 }
 
 type Converter struct {
@@ -37,6 +36,7 @@ func (c *Converter) verifyImages() {
 			if err != nil {
 				panic(err)
 			}
+			defer open.Close()
 
 			read, err := io.ReadAll(open)
 			if err != nil {
@@ -61,7 +61,18 @@ func (c *Converter) toWebp() [][]byte {
 		go func(file []byte) {
 			defer wg.Done()
 
-			webp, err := bimg.NewImage(file).Convert(bimg.WEBP)
+			options := bimg.Options{
+				Width:        1280,            // Set the width of the output image
+				Height:       720,            // Set the height of the output image
+				Quality:      100,             // Set the quality of the output image (0-100)
+				Interlace:    true,           // Enable progressive (interlaced) rendering
+				Enlarge:      true,           // Allow enlarging images (by default, bimg prevents upscaling)
+				Embed:        true,           // Embed ICC profiles and comments
+				Gravity:      bimg.GravitySmart, // Set the gravity for resizing (e.g., bimg.GravityNorthWest)
+				Type:         bimg.WEBP,      // Set the output image format (e.g., bimg.WEBP, bimg.PNG)
+			}
+
+			webp, err := bimg.NewImage(file).Process(options)
 			if err != nil {
 				panic(err)
 			}
@@ -73,7 +84,7 @@ func (c *Converter) toWebp() [][]byte {
 	return WebPs
 }
 
-//
+// Converted Images, Number of Converted Images
 func (c *Converter) Convert() ([][]byte, bool) {
 	c.verifyImages()
 	webps := c.toWebp()
