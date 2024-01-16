@@ -11,6 +11,8 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.0 // indirect
 	github.com/google/uuid v1.5.0 // indirect
+	github.com/h2non/bimg v1.1.9 // indirect
+	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lib/pq v1.10.9 // indirect

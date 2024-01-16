@@ -1,6 +1,6 @@
 package model
 
-func CreateBlog(blog Blog, images ...string) {
+func (blog Blog) CreateBlog(images ...string) {
 	Connect()
 	createImages(blog.Id, images...)
 	const sql = `INSERT INTO blog (title, description, "bloggerId") VALUES (?, ?, ?)`
@@ -10,7 +10,7 @@ func CreateBlog(blog Blog, images ...string) {
 	}
 }
 
-func UpdateBlog(blog Blog, images ...string) {
+func (blog Blog) UpdateBlog(images ...string) {
 	Connect()
 	createImages(blog.Id, images...)
 	const sql = `UPDATE blog`
@@ -20,8 +20,9 @@ func UpdateBlog(blog Blog, images ...string) {
 	}
 }
 
-func DeleteBlog(id string) {
+func (blog Blog) DeleteBlog() {
 	Connect()
+	id := blog.Id
 
 	const sql1 = `SELECT image from "blogImages" WHERE id=?`
 	if rows, err := DB.Query(sql1, id); err != nil {
@@ -58,7 +59,7 @@ func SelectBlogLikes() {
 
 }
 
-func NewBlogLike(like BlogLikes) {
+func (like BlogLikes) NewBlogLike() {
 	Connect()
 	const sql = `INSERT INTO "blogLikes" ("likerId", "blogId") VALUES (?, ?)`
 
@@ -67,7 +68,9 @@ func NewBlogLike(like BlogLikes) {
 	}
 }
 
-func NewBlogComment(comment BlogComments) {
+func (like BlogLikes) RemoveBlogLike() {}
+
+func (comment BlogComments) NewBlogComment() {
 	Connect()
 	const sql = `INSERT INTO "blogComments" ("commenterId", "blogId", comment) VALUES (?, ?, ?)`
 
@@ -75,7 +78,5 @@ func NewBlogComment(comment BlogComments) {
 		panic(err)
 	}
 }
-
-func RemoveBlogLike() {}
 
 func RemoveBlogComment() {}

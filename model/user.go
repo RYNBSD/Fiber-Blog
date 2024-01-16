@@ -1,8 +1,10 @@
 package model
 
-import "sync"
+import (
+	"sync"
+)
 
-func CreateUser(user User) {
+func (user User) CreateUser() {
 	Connect()
 	const sql = `INSERT INTO user(username, email, password, picture) VALUES (?, ?, ?, ?)`
 
@@ -11,7 +13,7 @@ func CreateUser(user User) {
 	}
 }
 
-func UpdateUser(user User) {
+func (user User) UpdateUser() {
 	Connect()
 
 	if len(user.Picture) > 0 {
@@ -27,26 +29,17 @@ func UpdateUser(user User) {
 	}
 }
 
-func DeleteUser(id string) {
+func (user User) DeleteUser() {
 	Connect()
+	id := user.Id
 
 	// Delete user picture from public
-	if rows, err := DB.Query("SELECT picture FROM user WHERE id=?", id); err != nil {
+	picture := ""
+	row := DB.QueryRow("SELECT picture FROM user WHERE id=? LIMIT 1", id)
+	if err := row.Scan(&picture); err != nil {
 		panic(err)
-	} else {
-		defer rows.Close()
-
-		picture := ""
-		for rows.Next() {
-			if err := rows.Scan(&picture); err != nil {
-				panic(err)
-			}
-		}
-		if err := rows.Err(); err != nil {
-			panic(err)
-		}
-		deleteImages(picture)
 	}
+	deleteImages(picture)
 
 	// Get blog IDs to delete there images
 	IDs := make([]string, 0)
@@ -73,32 +66,33 @@ func DeleteUser(id string) {
 		wg.Add(1)
 		go func(id string) {
 			defer wg.Done()
-			DeleteBlog(id)
+			blog := Blog{Id: id}
+			blog.DeleteBlog()
 		}(id)
 	}
 	wg.Wait()
 
-	const sql = `DELETE FROM user WHERE id=?`
-
-	if _, err := DB.Exec(sql, id); err != nil {
+	if _, err := DB.Exec("DELETE FROM user WHERE id=?", id); err != nil {
 		panic(err)
 	}
 }
 
-func SelectUser(id string) {
+func (user User) SelectUser() {
 	Connect()
+	id := user.Id
 	const sql = ``
 
 	rows, err := DB.Query(sql, id)
 	if err != nil {
 		panic(err)
+	} else {
+		defer rows.Close()
 	}
-	defer rows.Close()
-
 }
 
-func ProfileUser(id string) {
+func (user User) ProfileUser() {
 	Connect()
+	id := user.Id
 	const sql = ``
 
 	rows, err := DB.Query(sql, id)
