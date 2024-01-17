@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"blog/constant"
+	"blog/lib/file"
+	"blog/model"
 	"blog/schema"
 	"blog/util"
 	"io"
@@ -20,11 +23,31 @@ func SignUp(c *fiber.Ctx) error {
 	}
 
 	util.EscapeStrings(&body.Username, &body.Password)
-
 	picture, err := c.FormFile("picture")
 	if err != nil {
 		return err
 	}
+
+	convert := file.Converter{Files: [picture]}
+	converted, isConverted := convert.Convert()
+	if !isConverted {
+		return fiber.ErrUnsupportedMediaType
+	}
+
+	upload := file.Uploader{Files: converted, Format: constant.WEBP}
+	uploaded := upload.Upload()[0]
+
+	if body.Password, err = util.HashPassword(body.Password); err != nil {
+		panic(err)
+	}
+
+	user := model.User{
+		Username: body.Username,
+		Email: body.Email,
+		Password: body.Password,
+		Picture: uploaded,
+	}
+	user.CreateUser()
 
 	return c.SendStatus(fiber.StatusCreated)
 }

@@ -1,6 +1,7 @@
 package file
 
 import (
+	"blog/constant"
 	"blog/util"
 	"os"
 	"path"
@@ -90,7 +91,7 @@ func (u *Uploader) uniqueFileName() string {
 
 func (u *Uploader) checkFormat() bool {
 	switch u.Format {
-	case "webp":
+	case constant.WEBP:
 		return true
 	default:
 		return false

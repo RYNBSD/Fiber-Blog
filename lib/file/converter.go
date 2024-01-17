@@ -18,7 +18,6 @@ type IConverter interface {
 
 type Converter struct {
 	Files []*multipart.FileHeader
-	To    string
 
 	filesContent [][]byte
 }
