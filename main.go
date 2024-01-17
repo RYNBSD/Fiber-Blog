@@ -4,7 +4,6 @@ import (
 	"blog/model"
 	"blog/router"
 	"blog/util"
-	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
