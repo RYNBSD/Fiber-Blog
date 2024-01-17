@@ -6,7 +6,7 @@ import (
 	"blog/model"
 	"blog/schema"
 	"blog/util"
-	"io"
+	"mime/multipart"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -28,7 +28,7 @@ func SignUp(c *fiber.Ctx) error {
 		return err
 	}
 
-	convert := file.Converter{Files: [picture]}
+	convert := file.Converter{Files: []*multipart.FileHeader{picture}}
 	converted, isConverted := convert.Convert()
 	if !isConverted {
 		return fiber.ErrUnsupportedMediaType
@@ -43,9 +43,9 @@ func SignUp(c *fiber.Ctx) error {
 
 	user := model.User{
 		Username: body.Username,
-		Email: body.Email,
+		Email:    body.Email,
 		Password: body.Password,
-		Picture: uploaded,
+		Picture:  uploaded,
 	}
 	user.CreateUser()
 

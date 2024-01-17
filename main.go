@@ -4,7 +4,10 @@ import (
 	"blog/model"
 	"blog/router"
 	"blog/util"
+	"errors"
+	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -17,25 +20,25 @@ import (
 func main() {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			// status := 0
-			// message := ""
+			code := fiber.StatusInternalServerError
+			
+			var fiberError *fiber.Error
+			if errors.As(err, &fiberError) {
+				code = fiberError.Code
+			}
 
-			// switch e := err.(type) {
-			// case error:
-			// 	status = fiber.StatusInternalServerError
-			// 	message = e.Error()
-			// case fiber.Error:
-			// 	status = e.Code
-			// 	message = e.Message
-			// case string:
-			// 	status = fiber.StatusInternalServerError
-			// 	message = e
-			// default:
-			// 	status = fiber.StatusInternalServerError
-			// 	message = fmt.Sprintf("%v", e)
-			// }
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			if code >= 500 {
+				e := model.Error{
+					Status: int16(code),
+					Message: err.Error(),
+				}
+				e.CreateError()
+			}
+			
+			text := http.StatusText(code)
+			return c.Status(code).JSON(fiber.Map{
 				"success": false,
+				"message": text,
 			})
 		},
 	})
@@ -45,14 +48,39 @@ func main() {
 	app.Use(helmet.New())
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
-	}))
+		StackTraceHandler: func(c *fiber.Ctx, err any) {
+			status := 0
+			message := ""
+		
+			switch e := err.(type) {
+			case error:
+				status = fiber.StatusInternalServerError
+				message = e.Error()
+			case fiber.Error:
+				status = e.Code
+				message = e.Message
+			case string:
+				status = fiber.StatusInternalServerError
+				message = e
+			default:
+				status = fiber.StatusInternalServerError
+				message = fmt.Sprintf("%v", e)
+			}
 
+			e := model.Error{
+				Status: int16(status),
+				Message: message,
+			}
+			e.CreateError()
+		},
+	}))
+	
 	router.Router(app)
+	app.Static("/", util.PublicDir())
 	app.Use("*", func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusNotFound)
 	})
 
-	app.Static("/", util.PublicDir())
 	model.Init()
 	log.Fatal(app.Listen(":3000"))
 }
