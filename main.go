@@ -21,6 +21,7 @@ func main() {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
+			message := ""
 			
 			var fiberError *fiber.Error
 			if errors.As(err, &fiberError) {
@@ -33,12 +34,19 @@ func main() {
 					Message: err.Error(),
 				}
 				e.CreateError()
+				message = http.StatusText(code)
+			} else {
+				errorMessage := err.Error()
+				if len(errorMessage) > 0 {
+					message = errorMessage
+				} else {
+					message = http.StatusText(code)
+				}
 			}
 			
-			text := http.StatusText(code)
 			return c.Status(code).JSON(fiber.Map{
 				"success": false,
-				"message": text,
+				"message": message,
 			})
 		},
 	})

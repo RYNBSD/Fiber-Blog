@@ -2,41 +2,39 @@ package model
 
 import (
 	"blog/types"
-	"reflect"
+	"blog/util"
 	"strings"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
-func (user User) CreateUser() {
+func (u *User) CreateUser() {
 	Connect()
 	const sql = `INSERT INTO user(username, email, password, picture) VALUES (?, ?, ?, ?)`
 
-	if _, err := DB.Exec(sql, user.Username, user.Email, user.Password, user.Picture); err != nil {
+	if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Picture); err != nil {
 		panic(err)
 	}
 }
 
-func (user User) UpdateUser() {
+func (u *User) UpdateUser() {
 	Connect()
 
-	if len(user.Picture) > 0 {
+	if len(u.Picture) > 0 {
 		const sql = `UPDATE user SET username=?, email=?, password=?, picture=? WHERE id=?`
-		if _, err := DB.Exec(sql, user.Username, user.Email, user.Password, user.Picture, user.Id); err != nil {
+		if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Picture, u.Id); err != nil {
 			panic(err)
 		}
 	} else {
 		const sql = `UPDATE user SET username=?, email=?, password=? WHERE id=?`
-		if _, err := DB.Exec(sql, user.Username, user.Email, user.Password, user.Id); err != nil {
+		if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Id); err != nil {
 			panic(err)
 		}
 	}
 }
 
-func (user User) DeleteUser() {
+func (u *User) DeleteUser() {
 	Connect()
-	id := user.Id
+	id := u.Id
 
 	// Delete user picture from public
 	picture := ""
@@ -82,7 +80,7 @@ func (user User) DeleteUser() {
 	}
 }
 
-func (user User) VerifyUser() bool {
+func (u *User) VerifyUser(scan bool) bool {
 	Connect()
 	sql := `
 		SELECT
@@ -93,11 +91,21 @@ func (user User) VerifyUser() bool {
 	by := ""
 	found := false
 
-	if len(user.Id) > 0 {
-		by = user.Id
+	if len(u.Id) > 0 {
+
+		by = u.Id
+		if err := util.IsUUID(by); err != nil {
+			panic(err)
+		}
+
 		sql = strings.Replace(sql, "$", "id", 2)
-	} else if len(user.Email) > 0 {
-		by = user.Email
+	} else if len(u.Email) > 0 {
+
+		by = u.Email
+		if err := util.IsEmail(by); err != nil {
+			panic(err)
+		}
+
 		sql = strings.Replace(sql, "$", "email", 2)
 	} else {
 		panic("Unprovided id or email to verify if user exist")
@@ -108,18 +116,22 @@ func (user User) VerifyUser() bool {
 		panic(err)
 	}
 	row.Scan(&found)
+
+	if found {
+		u.SelectUser()
+	}
 	return found
 }
 
-func (user *User) SelectUser() {
+func (u *User) SelectUser() {
 	Connect()
 
-	if len(user.Id) == 0 {
+	if len(u.Id) == 0 {
 		panic("Unprovided user id to select user")
-	} else if _, err := uuid.Parse(user.Id); err != nil {
+	} else if err := util.IsUUID(u.Id); err != nil {
 		panic(err)
 	}
-	id := user.Id
+	id := u.Id
 
 	const sql = `
 		SELECT username, email, picture
@@ -133,14 +145,14 @@ func (user *User) SelectUser() {
 		panic(err)
 	}
 
-	row.Scan(&user.Username, &user.Email, &user.Picture)
+	row.Scan(&u.Username, &u.Email, &u.Picture)
 }
 
-func (user User) ProfileUser() []types.Map {
+func (u *User) ProfileUser() []types.Map {
 	Connect()
 
-	user.SelectUser()
-	id := user.Id
+	u.SelectUser()
+	id := u.Id
 	const sql = ``
 
 	rows, err := DB.Query(sql, id)

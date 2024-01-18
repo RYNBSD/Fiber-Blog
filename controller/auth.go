@@ -69,14 +69,14 @@ func SignIn(c *fiber.Ctx) error {
 		Email: body.Email,
 		Password: body.Password,
 	}
-	found := user.VerifyUser()
+	found := user.VerifyUser(true)
 	if !found {
 		return fiber.ErrNotFound
 	}
 
-	
-
-	return c.SendStatus(fiber.StatusOK)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"user": user,
+	})
 }
 
 func SignOut(c *fiber.Ctx) error {
@@ -89,12 +89,18 @@ func Me(c *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	_, err := util.VerifyJwt(authorization)
+	id, err := util.VerifyJwt(authorization)
 	if err != nil {
 		return fiber.ErrUnauthorized
 	}
 
-	// TODO: add function to verify if user exists
+	user := model.User{Id: id}
+	found := user.VerifyUser(true)
+	if !found {
+		return fiber.ErrNotFound
+	}
 
-	return c.SendStatus(fiber.StatusCreated)
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"user": user,
+	})
 }
