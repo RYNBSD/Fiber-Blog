@@ -74,7 +74,6 @@ func main() {
 			e.CreateError()
 		},
 	}))
-	
 	router.Router(app)
 	app.Static("/", util.PublicDir())
 	app.Use("*", func(c *fiber.Ctx) error {

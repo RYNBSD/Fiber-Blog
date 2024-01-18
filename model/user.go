@@ -1,7 +1,12 @@
 package model
 
 import (
+	"blog/types"
+	"reflect"
+	"strings"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 func (user User) CreateUser() {
@@ -77,21 +82,64 @@ func (user User) DeleteUser() {
 	}
 }
 
-func (user User) SelectUser() {
+func (user User) VerifyUser() bool {
 	Connect()
-	id := user.Id
-	const sql = ``
+	sql := `
+		SELECT
+		CASE WHEN COUNT($) > 0 THEN 'true' ELSE 'false' END AS found FROM user
+		WHERE $=?
+		LIMIT 1
+	`
+	by := ""
+	found := false
 
-	rows, err := DB.Query(sql, id)
-	if err != nil {
-		panic(err)
+	if len(user.Id) > 0 {
+		by = user.Id
+		sql = strings.Replace(sql, "$", "id", 2)
+	} else if len(user.Email) > 0 {
+		by = user.Email
+		sql = strings.Replace(sql, "$", "email", 2)
 	} else {
-		defer rows.Close()
+		panic("Unprovided id or email to verify if user exist")
 	}
+
+	row := DB.QueryRow(sql, by)
+	if err := row.Err(); err != nil {
+		panic(err)
+	}
+	row.Scan(&found)
+	return found
 }
 
-func (user User) ProfileUser() {
+func (user *User) SelectUser() {
 	Connect()
+
+	if len(user.Id) == 0 {
+		panic("Unprovided user id to select user")
+	} else if _, err := uuid.Parse(user.Id); err != nil {
+		panic(err)
+	}
+	id := user.Id
+
+	const sql = `
+		SELECT username, email, picture
+		FROM user
+		WHERE id=?
+		LIMIT 1
+	`
+
+	row := DB.QueryRow(sql, id)
+	if err := row.Err(); err != nil {
+		panic(err)
+	}
+
+	row.Scan(&user.Username, &user.Email, &user.Picture)
+}
+
+func (user User) ProfileUser() []types.Map {
+	Connect()
+
+	user.SelectUser()
 	id := user.Id
 	const sql = ``
 
@@ -99,5 +147,32 @@ func (user User) ProfileUser() {
 	if err != nil {
 		panic(err)
 	}
+
 	defer rows.Close()
+	blogs := make([]types.Map, 0)
+	for rows.Next() {
+
+		columns, err := rows.ColumnTypes()
+		if err != nil {
+			panic(err)
+		}
+
+		values := make([]any, len(columns))
+		blog := types.Map{}
+
+		for i, column := range columns {
+			blog[column.Name()] = reflect.New(column.ScanType()).Interface()
+			values[i] = blog[column.Name()]
+		}
+
+		if err := rows.Scan(values...); err != nil {
+			panic(err)
+		}
+		blogs = append(blogs, blog)
+	}
+
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
+	return blogs
 }

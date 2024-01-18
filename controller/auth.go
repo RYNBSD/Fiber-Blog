@@ -65,6 +65,17 @@ func SignIn(c *fiber.Ctx) error {
 
 	util.EscapeStrings(&body.Password)
 
+	user := model.User{
+		Email: body.Email,
+		Password: body.Password,
+	}
+	found := user.VerifyUser()
+	if !found {
+		return fiber.ErrNotFound
+	}
+
+	
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
