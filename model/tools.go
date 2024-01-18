@@ -1,9 +1,12 @@
 package model
 
 import (
+	"blog/types"
 	"blog/util"
+	"database/sql"
 	"os"
 	"path"
+	"reflect"
 	"sync"
 )
 
@@ -49,5 +52,29 @@ func deleteImages(images ...string) {
 			}(image)
 		}
 		wg.Wait()
+	}
+}
+
+func scanUnknownColumns(rows *sql.Rows, elems *[]types.Map) {
+	columns, err := rows.ColumnTypes()
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+
+		values := make([]any, len(columns))
+		elem := types.Map{}
+
+		for i, column := range columns {
+			elem[column.Name()] = reflect.New(column.ScanType()).Interface()
+			values[i] = elem[column.Name()]
+		}
+
+		if err := rows.Scan(values...); err != nil {
+			panic(err)
+		}
+
+		*elems = append(*elems, elem)
 	}
 }

@@ -150,26 +150,7 @@ func (user User) ProfileUser() []types.Map {
 
 	defer rows.Close()
 	blogs := make([]types.Map, 0)
-	for rows.Next() {
-
-		columns, err := rows.ColumnTypes()
-		if err != nil {
-			panic(err)
-		}
-
-		values := make([]any, len(columns))
-		blog := types.Map{}
-
-		for i, column := range columns {
-			blog[column.Name()] = reflect.New(column.ScanType()).Interface()
-			values[i] = blog[column.Name()]
-		}
-
-		if err := rows.Scan(values...); err != nil {
-			panic(err)
-		}
-		blogs = append(blogs, blog)
-	}
+	scanUnknownColumns(rows, &blogs)
 
 	if err := rows.Err(); err != nil {
 		panic(err)
