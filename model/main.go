@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"sync"
 
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var DB *sql.DB = nil
 
 func Connect() {
 	if DB == nil {
-		db, err := sql.Open("postgres", "postgres:password@tcp(127.0.0.1:5432)/blog")
+		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1)/blog")
 		if err != nil {
 			panic(err)
 		}
@@ -41,16 +40,9 @@ func Init() {
 	Connect()
 	defer Close()
 
-	wg := sync.WaitGroup{}
-
 	for _, table := range tables {
-		wg.Add(1)
-		go func(table any) {
-			defer wg.Done()
-			createTable(table)
-		}(table)
+		createTable(table)
 	}
-	wg.Wait()
 }
 
 func createTable(model any) {
@@ -77,9 +69,9 @@ func createTable(model any) {
 	} else {
 		fields = reflect.ValueOf(model)
 	}
-	numFiled := fields.NumField()
+	numFields := fields.NumField()
 
-	for i := 0; i < numFiled; i++ {
+	for i := 0; i < numFields; i++ {
 		name := fields.Type().Field(i).Name
 		field, found := t.FieldByName(name)
 
@@ -87,16 +79,17 @@ func createTable(model any) {
 			continue
 		}
 
-		sql := field.Tag.Get("sql")
+		query := field.Tag.Get("sql")
 		json := field.Tag.Get("json")
 
-		if i == numFiled-1 {
-			sql += fmt.Sprintf("%v %v)", json, sql)
+		if i == numFields-1 {
+			sql += fmt.Sprintf("%v %v)", json, query)
 		} else {
-			sql += fmt.Sprintf("%v %v,", json, sql)
+			sql += fmt.Sprintf("%v %v,", json, query)
 		}
 	}
 
+	fmt.Println(sql)
 	if _, err := DB.Exec(sql); err != nil {
 		panic(err)
 	}

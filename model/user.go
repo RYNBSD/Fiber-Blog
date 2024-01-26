@@ -9,9 +9,11 @@ import (
 
 func (u *User) CreateUser() {
 	Connect()
-	const sql = `INSERT INTO user(username, email, password, picture) VALUES (?, ?, ?, ?)`
+	uuid := util.UUIDv4()
 
-	if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Picture); err != nil {
+	const sql = `INSERT INTO user(id, username, email, password, picture) VALUES (?, ?, ?, ?, ?)`
+
+	if _, err := DB.Exec(sql, uuid, u.Username, u.Email, u.Password, u.Picture); err != nil {
 		panic(err)
 	}
 }

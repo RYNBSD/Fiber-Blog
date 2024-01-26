@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 func PublicDir() string {
@@ -33,6 +34,20 @@ func Validate(data any) string {
 	}
 
 	return message
+}
+
+func UUIDv4() string {
+	v4, err := uuid.NewRandom()
+	if err != nil {
+		panic(err)
+	}
+
+	uuid := v4.String()
+	if len(uuid) == 0 {
+		panic("Empty uuid v4")
+	}
+
+	return uuid
 }
 
 func rootDir() string {
