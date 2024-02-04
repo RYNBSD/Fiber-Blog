@@ -1,4 +1,4 @@
 package constant
 
 const PUBLIC = "public"
-const WEBP = "webp"
+const JPEG = "jpeg"

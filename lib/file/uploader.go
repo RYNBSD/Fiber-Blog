@@ -3,6 +3,7 @@ package file
 import (
 	"blog/constant"
 	"blog/util"
+	"fmt"
 	"os"
 	"path"
 	"sync"
@@ -16,12 +17,10 @@ type IUploader interface {
 	Remove(...string)
 
 	uniqueFileName() string
-	checkFormat() bool
 }
 
 type Uploader struct {
-	Files  [][]byte
-	Format string
+	Files [][]byte
 }
 
 func (u *Uploader) Upload() []string {
@@ -34,11 +33,6 @@ func (u *Uploader) Upload() []string {
 
 		go func(file []byte) {
 			defer wg.Done()
-
-			format := u.checkFormat()
-			if !format {
-				return
-			}
 
 			name := u.uniqueFileName()
 			fullPath := path.Join(publicDir, name)
@@ -85,15 +79,6 @@ func (u *Uploader) uniqueFileName() string {
 		panic(err)
 	}
 
-	second := string(time.Now().Second())
-	return second + "_" + uuid.String() + "." + u.Format
-}
-
-func (u *Uploader) checkFormat() bool {
-	switch u.Format {
-	case constant.WEBP:
-		return true
-	default:
-		return false
-	}
+	second := fmt.Sprintf("%v", time.Now().Second())
+	return second + "_" + uuid.String() + "." + constant.JPEG
 }

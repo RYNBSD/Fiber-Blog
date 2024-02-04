@@ -34,7 +34,7 @@ func SignUp(c *fiber.Ctx) error {
 		return fiber.ErrUnsupportedMediaType
 	}
 
-	upload := file.Uploader{Files: converted, Format: constant.WEBP}
+	upload := file.Uploader{Files: converted}
 	uploaded := upload.Upload()[0]
 
 	if body.Password, err = util.HashPassword(body.Password); err != nil {
