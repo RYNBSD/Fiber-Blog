@@ -200,6 +200,7 @@ func (u *User) SelectPasswordByEmail() bool {
 	return true
 }
 
+// get user info and blogs
 func (u *User) Profile() ([]types.Map, error) {
 	Connect()
 
