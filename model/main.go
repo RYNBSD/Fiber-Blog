@@ -6,14 +6,24 @@ import (
 	"reflect"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB = nil
 
 func Connect() {
 	if DB == nil {
-		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1)/blog")
+		const (
+			host     = "localhost"
+			port     = 5432
+			user     = "postgres"
+			password = "password"
+			dbname   = "blog"
+		)
+		connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", connectionString)
 		if err != nil {
 			panic(err)
 		}
@@ -60,7 +70,7 @@ func createTable(model any) {
 	lowerCaseFirstChar := strings.ToLower(firstChar)
 	structName = strings.Replace(structName, firstChar, lowerCaseFirstChar, 1)
 
-	sql := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %v (", structName)
+	sql := fmt.Sprintf("CREATE TABLE IF NOT EXISTS \"%v\" (", structName)
 
 	var fields reflect.Value
 
@@ -83,9 +93,9 @@ func createTable(model any) {
 		json := field.Tag.Get("json")
 
 		if i == numFields-1 {
-			sql += fmt.Sprintf("%v %v)", json, query)
+			sql += fmt.Sprintf("\"%v\" %v);", json, query)
 		} else {
-			sql += fmt.Sprintf("%v %v,", json, query)
+			sql += fmt.Sprintf("\"%v\" %v,", json, query)
 		}
 	}
 
