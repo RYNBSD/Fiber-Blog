@@ -14,7 +14,7 @@ func createImages(blogId string, images ...string) {
 	if images != nil {
 		wg := sync.WaitGroup{}
 
-		const sql = `DELETE FROM "blogImages" WHERE "blogId"=?`
+		const sql = `DELETE FROM "blogImages" WHERE "blogId"=$1`
 		if _, err := DB.Exec(sql, blogId); err != nil {
 			panic(err)
 		}
@@ -24,7 +24,7 @@ func createImages(blogId string, images ...string) {
 
 			go func(image string) {
 				defer wg.Done()
-				const sql = `INSERT INTO "blogImages" (image, "blogId") VALUES (?, ?)`
+				const sql = `INSERT INTO "blogImages" ("image", "blogId") VALUES ($1, $2)`
 
 				if _, err := DB.Exec(sql, image, blogId); err != nil {
 					panic(err)
