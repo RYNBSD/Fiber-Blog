@@ -11,7 +11,7 @@ func (u *User) CreateUser() {
 	Connect()
 	uuid := util.UUIDv4()
 
-	const sql = `INSERT INTO user(id, username, email, password, picture) VALUES (?, ?, ?, ?, ?)`
+	const sql = `INSERT INTO "user"("id", "username", "email", "password", "picture") VALUES ($1, $2, $3, $4, $5)`
 
 	if _, err := DB.Exec(sql, uuid, u.Username, u.Email, u.Password, u.Picture); err != nil {
 		panic(err)
@@ -22,12 +22,12 @@ func (u *User) UpdateUser() {
 	Connect()
 
 	if len(u.Picture) > 0 {
-		const sql = `UPDATE user SET username=?, email=?, password=?, picture=? WHERE id=?`
+		const sql = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "picture"=$4, "updatedAt"="NOW()" WHERE "id"=$5`
 		if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Picture, u.Id); err != nil {
 			panic(err)
 		}
 	} else {
-		const sql = `UPDATE user SET username=?, email=?, password=? WHERE id=?`
+		const sql = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "updatedAt"="NOW()" WHERE "id"=$4`
 		if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Id); err != nil {
 			panic(err)
 		}
@@ -40,7 +40,7 @@ func (u *User) DeleteUser() {
 
 	// Delete user picture from public
 	picture := ""
-	row := DB.QueryRow("SELECT picture FROM user WHERE id=? LIMIT 1", id)
+	row := DB.QueryRow("SELECT \"picture\" FROM \"user\" WHERE \"id\"=$1 LIMIT 1", id)
 	if err := row.Scan(&picture); err != nil {
 		panic(err)
 	}
@@ -48,7 +48,7 @@ func (u *User) DeleteUser() {
 
 	// Get blog IDs to delete there images
 	IDs := make([]string, 0)
-	if rows, err := DB.Query("SELECT id FROM blog WHERE \"bloggerId\"=?", id); err != nil {
+	if rows, err := DB.Query("SELECT \"id\" FROM \"blog\" WHERE \"bloggerId\"=$1", id); err != nil {
 		panic(err)
 	} else {
 		defer rows.Close()
@@ -77,7 +77,7 @@ func (u *User) DeleteUser() {
 	}
 	wg.Wait()
 
-	if _, err := DB.Exec("DELETE FROM user WHERE id=?", id); err != nil {
+	if _, err := DB.Exec("DELETE FROM \"user\" WHERE \"id\"=$1", id); err != nil {
 		panic(err)
 	}
 }
@@ -86,8 +86,8 @@ func (u *User) VerifyUser(scan bool) bool {
 	Connect()
 	sql := `
 		SELECT
-		CASE WHEN COUNT($) > 0 THEN 'true' ELSE 'false' END AS found FROM user
-		WHERE $=?
+		CASE WHEN COUNT($) > 0 THEN 'true' ELSE 'false' END AS found FROM "user"
+		WHERE $=$1
 		LIMIT 1
 	`
 	by := ""
@@ -100,7 +100,7 @@ func (u *User) VerifyUser(scan bool) bool {
 			panic(err)
 		}
 
-		sql = strings.Replace(sql, "$", "id", 2)
+		sql = strings.Replace(sql, "$", "\"id\"", 2)
 	} else if len(u.Email) > 0 {
 
 		by = u.Email
@@ -108,7 +108,7 @@ func (u *User) VerifyUser(scan bool) bool {
 			panic(err)
 		}
 
-		sql = strings.Replace(sql, "$", "email", 2)
+		sql = strings.Replace(sql, "$", "\"email\"", 2)
 	} else {
 		panic("Unprovided id or email to verify if user exist")
 	}
@@ -136,9 +136,9 @@ func (u *User) SelectUser() {
 	id := u.Id
 
 	const sql = `
-		SELECT username, email, picture
-		FROM user
-		WHERE id=?
+		SELECT "username", "email", "picture"
+		FROM "user"
+		WHERE "id"=$1
 		LIMIT 1
 	`
 
