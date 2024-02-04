@@ -3,44 +3,50 @@ package model
 import (
 	"blog/types"
 	"blog/util"
-	"strings"
+	"database/sql"
+	"fmt"
 	"sync"
 )
 
-func (u *User) CreateUser() {
+func (u *User) Create() {
 	Connect()
 	uuid := util.UUIDv4()
 
-	const sql = `INSERT INTO "user"("id", "username", "email", "password", "picture") VALUES ($1, $2, $3, $4, $5)`
+	const query = `INSERT INTO "user"("id", "username", "email", "password", "picture") VALUES ($1, $2, $3, $4, $5)`
 
-	if _, err := DB.Exec(sql, uuid, u.Username, u.Email, u.Password, u.Picture); err != nil {
+	if _, err := DB.Exec(query, uuid, u.Username, u.Email, u.Password, u.Picture); err != nil {
 		panic(err)
 	}
 }
 
-func (u *User) UpdateUser() {
+func (u *User) Update() {
 	Connect()
 
 	if len(u.Picture) > 0 {
-		const sql = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "picture"=$4, "updatedAt"="NOW()" WHERE "id"=$5`
-		if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Picture, u.Id); err != nil {
+		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "picture"=$4, "updatedAt"="NOW()" WHERE "id"=$5`
+		if _, err := DB.Exec(query, u.Username, u.Email, u.Password, u.Picture, u.Id); err != nil {
 			panic(err)
 		}
 	} else {
-		const sql = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "updatedAt"="NOW()" WHERE "id"=$4`
-		if _, err := DB.Exec(sql, u.Username, u.Email, u.Password, u.Id); err != nil {
+		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "updatedAt"="NOW()" WHERE "id"=$4`
+		if _, err := DB.Exec(query, u.Username, u.Email, u.Password, u.Id); err != nil {
 			panic(err)
 		}
 	}
 }
 
-func (u *User) DeleteUser() {
+func (u *User) Delete() {
 	Connect()
 	id := u.Id
 
 	// Delete user picture from public
 	picture := ""
 	row := DB.QueryRow("SELECT \"picture\" FROM \"user\" WHERE \"id\"=$1 LIMIT 1", id)
+
+	if err := row.Err(); err != nil {
+		panic(err)
+	}
+
 	if err := row.Scan(&picture); err != nil {
 		panic(err)
 	}
@@ -60,6 +66,7 @@ func (u *User) DeleteUser() {
 			}
 			IDs = append(IDs, id)
 		}
+
 		if err := rows.Err(); err != nil {
 			panic(err)
 		}
@@ -82,82 +89,127 @@ func (u *User) DeleteUser() {
 	}
 }
 
-func (u *User) VerifyUser(scan bool) bool {
-	Connect()
-	sql := `
-		SELECT
-		CASE WHEN COUNT($) > 0 THEN 'true' ELSE 'false' END AS found FROM "user"
-		WHERE $=$1
-		LIMIT 1
-	`
-	by := ""
-	found := false
-
-	if len(u.Id) > 0 {
-
-		by = u.Id
-		if err := util.IsUUID(by); err != nil {
-			panic(err)
-		}
-
-		sql = strings.Replace(sql, "$", "\"id\"", 2)
-	} else if len(u.Email) > 0 {
-
-		by = u.Email
-		if err := util.IsEmail(by); err != nil {
-			panic(err)
-		}
-
-		sql = strings.Replace(sql, "$", "\"email\"", 2)
-	} else {
-		panic("Unprovided id or email to verify if user exist")
-	}
-
-	row := DB.QueryRow(sql, by)
-	if err := row.Err(); err != nil {
-		panic(err)
-	}
-	row.Scan(&found)
-
-	if found {
-		u.SelectUser()
-	}
-	return found
-}
-
-func (u *User) SelectUser() {
+// This is the default for select user
+func (u *User) SelectById() bool {
 	Connect()
 
 	if len(u.Id) == 0 {
-		panic("Unprovided user id to select user")
+		panic("Unprovided id to select user")
 	} else if err := util.IsUUID(u.Id); err != nil {
 		panic(err)
 	}
-	id := u.Id
 
-	const sql = `
+	const query = `
 		SELECT "username", "email", "picture"
 		FROM "user"
 		WHERE "id"=$1
 		LIMIT 1
 	`
 
-	row := DB.QueryRow(sql, id)
-	if err := row.Err(); err != nil {
+	row := DB.QueryRow(query, u.Id)
+	err := row.Err()
+
+	switch {
+	case err == sql.ErrNoRows:
+		return false
+	case err != nil:
 		panic(err)
 	}
 
 	row.Scan(&u.Username, &u.Email, &u.Picture)
+	return true
 }
 
-func (u *User) ProfileUser() []types.Map {
+func (u *User) SelectByEmail() bool {
 	Connect()
 
-	u.SelectUser()
-	id := u.Id
-	const sql = ``
+	if len(u.Email) == 0 {
+		panic("Unprovided email to select user")
+	} else if err := util.IsEmail(u.Email); err != nil {
+		panic(err)
+	}
 
-	rows, err := DB.Query(sql, id)
+	const query = `
+		SELECT "username", "email", "picture"
+		FROM "user"
+		WHERE "email"=$1
+		LIMIT 1
+	`
+
+	row := DB.QueryRow(query, u.Email)
+	err := row.Err()
+
+	switch {
+	case err == sql.ErrNoRows:
+		return false
+	case err != nil:
+		panic(err)
+	}
+
+	row.Scan(&u.Username, &u.Email, &u.Picture)
+	return true
+}
+
+func (u *User) SelectPasswordById() bool {
+	if err := util.IsUUID(u.Id); err != nil {
+		panic(err)
+	}
+
+	const query = `
+		SELECT "password"
+		FROM "user"
+		WHERE "id"=$1
+		LIMIT 1
+	`
+	row := DB.QueryRow(query, u.Id)
+	err := row.Err()
+
+	switch {
+	case err == sql.ErrNoRows:
+		return false
+	case err != nil:
+		panic(err)
+	}
+
+	row.Scan(&u.Password)
+	return true
+}
+
+func (u *User) SelectPasswordByEmail() bool {
+	if err := util.IsEmail(u.Email); err != nil {
+		panic(err)
+	}
+
+	const query = `
+		SELECT "password"
+		FROM "user"
+		WHERE "email"=$1
+		LIMIT 1
+	`
+	row := DB.QueryRow(query, u.Email)
+	err := row.Err()
+
+	switch {
+	case err == sql.ErrNoRows:
+		return false
+	case err != nil:
+		panic(err)
+	}
+
+	row.Scan(&u.Password)
+	return true
+}
+
+func (u *User) Profile() ([]types.Map, error) {
+	Connect()
+
+	if found := u.SelectById(); !found {
+		return nil, fmt.Errorf("User not found")
+	}
+
+	const query = ``
+
+	rows, err := DB.Query(query, u.Id)
 	if err != nil {
 		panic(err)
 	}
@@ -169,5 +221,5 @@ func (u *User) ProfileUser() []types.Map {
 	if err := rows.Err(); err != nil {
 		panic(err)
 	}
-	return blogs
+	return blogs, nil
 }
