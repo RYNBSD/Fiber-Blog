@@ -18,7 +18,7 @@ func SignUp(c *fiber.Ctx) error {
 		return err
 	}
 
-	message := util.Validate(body)
+	message := util.Validate(&body)
 	if len(message) > 0 {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}

@@ -33,6 +33,7 @@ func main() {
 					Status: int16(code),
 					Message: err.Error(),
 				}
+				fmt.Println(e)
 				e.CreateError()
 				message = http.StatusText(code)
 			} else {

@@ -99,7 +99,7 @@ func createTable(model any) {
 		}
 	}
 
-	fmt.Println(sql)
+	// fmt.Println(sql)
 	if _, err := DB.Exec(sql); err != nil {
 		panic(err)
 	}
