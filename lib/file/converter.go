@@ -21,23 +21,30 @@ type Converter struct {
 	filesContent [][]byte
 }
 func (c *Converter) verifyImages() {
-	filteredFiles := make([][]byte, 0)
 	wg := sync.WaitGroup{}
+	mutex := sync.Mutex{}
+	filteredFiles := make([][]byte, 0)
+
 	for _, file := range c.Files {
 		wg.Add(1)
+
 		go func(file *multipart.FileHeader) {
 			defer wg.Done()
 			open, err := file.Open()
 			if err != nil {
 				panic(err)
 			}
+
 			defer open.Close()
 			read, err := io.ReadAll(open)
 			if err != nil {
 				panic(err)
 			}
+
 			if filetype.IsImage(read) {
+				mutex.Lock()
 				filteredFiles = append(filteredFiles, read)
+				mutex.Unlock()
 			}
 		}(file)
 	}
@@ -47,6 +54,7 @@ func (c *Converter) verifyImages() {
 
 func (c *Converter) toWebp() [][]byte {
 	wg := sync.WaitGroup{}
+	mutex := sync.Mutex{}
 	WebPs := make([][]byte, 0)
 
 	for _, file := range c.filesContent {
@@ -69,7 +77,10 @@ func (c *Converter) toWebp() [][]byte {
 			if err != nil {
 				panic(err)
 			}
+
+			mutex.Lock()
 			WebPs = append(WebPs, webp)
+			mutex.Unlock()
 		}(file)
 	}
 	wg.Wait()
