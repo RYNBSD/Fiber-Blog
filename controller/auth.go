@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"blog/constant"
 	"blog/lib/file"
 	"blog/model"
 	"blog/schema"
@@ -47,7 +46,7 @@ func SignUp(c *fiber.Ctx) error {
 		Password: body.Password,
 		Picture:  uploaded,
 	}
-	user.CreateUser()
+	user.Create()
 
 	return c.SendStatus(fiber.StatusCreated)
 }
@@ -69,8 +68,7 @@ func SignIn(c *fiber.Ctx) error {
 		Email: body.Email,
 		Password: body.Password,
 	}
-	found := user.VerifyUser(true)
-	if !found {
+	if found := user.SelectByEmail(); !found {
 		return fiber.ErrNotFound
 	}
 
@@ -95,8 +93,7 @@ func Me(c *fiber.Ctx) error {
 	}
 
 	user := model.User{Id: id}
-	found := user.VerifyUser(true)
-	if !found {
+	if found := user.SelectById(); !found {
 		return fiber.ErrNotFound
 	}
 
