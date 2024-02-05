@@ -13,7 +13,7 @@ import (
 )
 
 func SignUp(c *fiber.Ctx) error {
-	body := &schema.SignUp{}
+	body := schema.SignUp{}
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}

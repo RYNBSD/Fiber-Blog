@@ -8,8 +8,6 @@ import (
 	"path"
 	"sync"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type IUploader interface {
@@ -27,6 +25,7 @@ func (u *Uploader) Upload() []string {
 	publicDir := util.PublicDir()
 	uploaded := make([]string, 0)
 	wg := sync.WaitGroup{}
+	mutex := sync.Mutex{}
 
 	for _, file := range u.Files {
 		wg.Add(1)
@@ -42,13 +41,14 @@ func (u *Uploader) Upload() []string {
 				panic(err)
 			}
 
-			_, err = open.Write(file)
-			if err != nil {
+			if _, err = open.Write(file); err != nil {
 				panic(err)
 			}
 
 			defer open.Close()
+			mutex.Lock()
 			uploaded = append(uploaded, name)
+			mutex.Unlock()
 		}(file)
 	}
 
@@ -74,11 +74,8 @@ func (u *Uploader) Remove(paths ...string) {
 }
 
 func (u *Uploader) uniqueFileName() string {
-	uuid, err := uuid.NewRandom()
-	if err != nil {
-		panic(err)
-	}
+	uuid := util.UUIDv4()
 
 	second := fmt.Sprintf("%v", time.Now().Second())
-	return second + "_" + uuid.String() + "." + constant.JPEG
+	return second + "_" + uuid + "." + constant.JPEG
 }
