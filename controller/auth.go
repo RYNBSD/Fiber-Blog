@@ -54,7 +54,7 @@ func SignUp(c *fiber.Ctx) error {
 }
 
 func SignIn(c *fiber.Ctx) error {
-	var body *schema.SignIn
+	body := &schema.SignIn{}
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
