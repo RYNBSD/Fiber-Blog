@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"blog/config"
 	"blog/lib/file"
 	"blog/model"
 	"blog/schema"
 	"blog/util"
+	"encoding/json"
 	"mime/multipart"
 
 	"github.com/gofiber/fiber/v2"
@@ -78,6 +80,28 @@ func SignIn(c *fiber.Ctx) error {
 }
 
 func SignOut(c *fiber.Ctx) error {
+	session, err := config.Store.Get(c)
+	if err != nil {
+		panic(err)
+	}
+
+	user, err := json.Marshal(config.User{Id: ""})
+	if err != nil {
+		panic(err)
+	}
+
+	access, err := json.Marshal(config.Access{Key: "", Iv: ""})
+	if err != nil {
+		panic(err)
+	}
+
+	session.Set(config.USER, user)
+	session.Set(config.ACCESS, access)
+
+	if err := session.Save(); err != nil {
+		panic(err)
+	}
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
