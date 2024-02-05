@@ -117,6 +117,7 @@ func (u *User) SelectById() bool {
 	}
 
 	row.Scan(&u.Username, &u.Email, &u.Picture)
+	u.Password = ""
 	return true
 }
 
@@ -147,6 +148,7 @@ func (u *User) SelectByEmail() bool {
 	}
 
 	row.Scan(&u.Username, &u.Email, &u.Picture)
+	u.Password = ""
 	return true
 }
 

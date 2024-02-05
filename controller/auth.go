@@ -23,7 +23,7 @@ func SignUp(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
 
-	util.EscapeStrings(&body.Username, &body.Password)
+	// util.EscapeStrings(&body.Username, &body.Password)
 	picture, err := c.FormFile("picture")
 	if err != nil {
 		return err
@@ -64,12 +64,20 @@ func SignIn(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
 
-	util.EscapeStrings(&body.Password)
+	// util.EscapeStrings(&body.Password)
 
 	user := model.User{
 		Email: body.Email,
-		Password: body.Password,
 	}
+
+	if found := user.SelectPasswordByEmail(); !found {
+		return fiber.ErrNotFound
+	}
+
+	if valid := util.ComparePassword(body.Password, user.Password); !valid {
+		return fiber.NewError(fiber.StatusUnauthorized, "Invalid password")
+	}
+
 	if found := user.SelectByEmail(); !found {
 		return fiber.ErrNotFound
 	}
