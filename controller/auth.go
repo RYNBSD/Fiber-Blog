@@ -13,7 +13,7 @@ import (
 )
 
 func SignUp(c *fiber.Ctx) error {
-	var body *schema.SignUp
+	body := &schema.SignUp{}
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
@@ -38,15 +38,15 @@ func SignUp(c *fiber.Ctx) error {
 	upload := file.Uploader{Files: converted}
 	uploaded := upload.Upload()[0]
 
-	if body.Password, err = util.HashPassword(body.Password); err != nil {
-		panic(err)
-	}
-
 	user := model.User{
 		Username: body.Username,
 		Email:    body.Email,
-		Password: body.Password,
+		Password: "",
 		Picture:  uploaded,
+	}
+
+	if user.Password, err = util.HashPassword(body.Password); err != nil {
+		panic(err)
 	}
 	user.Create()
 
