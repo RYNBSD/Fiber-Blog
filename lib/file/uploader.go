@@ -76,6 +76,6 @@ func (u *Uploader) Remove(paths ...string) {
 func (u *Uploader) uniqueFileName() string {
 	uuid := util.UUIDv4()
 
-	second := fmt.Sprintf("%v", time.Now().Second())
-	return second + "_" + uuid + "." + constant.JPEG
+	second := fmt.Sprintf("%v", time.Now().Unix())
+	return second + "_" + uuid + "." + constant.WEBP
 }

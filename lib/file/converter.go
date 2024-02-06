@@ -17,9 +17,10 @@ type IConverter interface {
 }
 
 type Converter struct {
-	Files []*multipart.FileHeader
+	Files        []*multipart.FileHeader
 	filesContent [][]byte
 }
+
 func (c *Converter) verifyImages() {
 	wg := sync.WaitGroup{}
 	mutex := sync.Mutex{}
@@ -62,18 +63,20 @@ func (c *Converter) toWebp() [][]byte {
 		go func(file []byte) {
 			defer wg.Done()
 
-			options := bimg.Options{
-				Width:        1280,            // Set the width of the output image
-				Height:       720,            // Set the height of the output image
-				Quality:      100,             // Set the quality of the output image (0-100)
-				Interlace:    true,           // Enable progressive (interlaced) rendering
-				Enlarge:      true,           // Allow enlarging images (by default, bimg prevents upscaling)
-				Embed:        true,           // Embed ICC profiles and comments
-				Gravity:      bimg.GravitySmart, // Set the gravity for resizing (e.g., bimg.GravityNorthWest)
-				Type:         bimg.WEBP,      // Set the output image format (e.g., bimg.WEBP, bimg.PNG)
+			opt := bimg.Options{
+				Width:     1280,
+				Height:    720,
+				Quality:   100,
+				Interlace: true,
+				Enlarge:   true,
+				Embed:     true,
+				Force:     true,
+				Crop:      true,
+				Gravity:   bimg.GravitySmart,
+				Type:      bimg.WEBP,
 			}
 
-			webp, err := bimg.NewImage(file).Process(options)
+			webp, err := bimg.NewImage(file).Process(opt)
 			if err != nil {
 				panic(err)
 			}
