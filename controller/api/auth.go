@@ -150,3 +150,8 @@ func Me(c *fiber.Ctx) error {
 		"user": user,
 	})
 }
+
+func ForgotPassword(c *fiber.Ctx) error {
+
+	return c.SendStatus(fiber.StatusBadRequest)
+}
