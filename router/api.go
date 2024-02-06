@@ -24,33 +24,33 @@ func auth() {
 	auth.Post("/sign-out", middleware.HasUserUnregistered, api.SignOut)
 	auth.Post("/me", middleware.HasUserUnregistered, api.Me)
 
-	auth.Put("/forgot-password", middleware.HasUserUnregistered)
+	auth.Put("/forgot-password", middleware.HasUserUnregistered, api.ForgotPassword)
 }
 
 func user() {
 	user := api_router.Group("/user")
-	
-	user.Get("/:userId/info", middleware.HasUserUnregistered)
-	user.Get("/:userId/blogs", middleware.HasUserUnregistered)
-	
-	user.Put("/", middleware.HasUserRegistered)
-	user.Delete("/", middleware.HasUserRegistered)
+
+	user.Get("/:userId/info", middleware.HasUserUnregistered, api.Info)
+	user.Get("/:userId/blogs", middleware.HasUserUnregistered, api.Blogs)
+
+	user.Put("/", middleware.HasUserRegistered, api.Update)
+	user.Delete("/", middleware.HasUserRegistered, api.Delete)
 }
 
 func blog() {
 	blog := api_router.Group("/blog")
 
-	blog.Get("/all", middleware.HasUserUnregistered)
-	blog.Get("/:blogId", middleware.HasUserUnregistered)
-	blog.Get("/:blogId/likes", middleware.HasUserUnregistered)
-	blog.Get("/:blogId/comments", middleware.HasUserUnregistered)
+	blog.Get("/all", middleware.HasUserUnregistered, api.All)
+	blog.Get("/:blogId", middleware.HasUserUnregistered, api.Blog)
+	blog.Get("/:blogId/likes", middleware.HasUserUnregistered, api.Likes)
+	blog.Get("/:blogId/comments", middleware.HasUserUnregistered, api.Comments)
 
-	blog.Post("/", middleware.HasUserRegistered)
-	blog.Post("/:blogId/comment", middleware.HasUserRegistered)
-	
-	blog.Put("/:blogId", middleware.HasUserRegistered)
-	blog.Put("/:blogId/commentId", middleware.HasUserRegistered)
-	
-	blog.Delete("/:blogId", middleware.HasUserRegistered)
-	blog.Delete("/:blogId/:commentId", middleware.HasUserRegistered)
+	blog.Post("/", middleware.HasUserRegistered, api.CreateBlog)
+	blog.Post("/:blogId/comment", middleware.HasUserRegistered, api.CreateComment)
+
+	blog.Put("/:blogId", middleware.HasUserRegistered, api.UpdateBlog)
+	blog.Put("/:blogId/commentId", middleware.HasUserRegistered, api.UpdateComment)
+
+	blog.Delete("/:blogId", middleware.HasUserRegistered, api.DeleteBlog)
+	blog.Delete("/:blogId/:commentId", middleware.HasUserRegistered, api.DeleteComment)
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"blog/controller/security"
 	"blog/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,5 +17,5 @@ func Security(app *fiber.App) {
 func access() {
 	access := security_router.Group("/access")
 
-	access.Post("/email", middleware.HasUserUnregistered)
+	access.Post("/email", middleware.HasUserUnregistered, security.AccessEmail)
 }
