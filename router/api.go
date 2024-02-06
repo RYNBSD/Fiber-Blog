@@ -1,34 +1,34 @@
 package router
 
 import (
-	"blog/controller"
+	"blog/controller/api"
 	"blog/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-var api fiber.Router
+var api_router fiber.Router
 
 func API(app *fiber.App) {
-	api = app.Group("/api")
+	api_router = app.Group("/api")
 	auth()
 	user()
 	blog()
 }
 
 func auth() {
-	auth := api.Group("/auth")
+	auth := api_router.Group("/auth")
 
-	auth.Post("/sign-up", middleware.HasUserUnregistered, controller.SignUp)
-	auth.Post("/sign-in", middleware.HasUserUnregistered, controller.SignIn)
-	auth.Post("/sign-out", middleware.HasUserUnregistered, controller.SignOut)
-	auth.Post("/me", middleware.HasUserUnregistered, controller.Me)
+	auth.Post("/sign-up", middleware.HasUserUnregistered, api.SignUp)
+	auth.Post("/sign-in", middleware.HasUserUnregistered, api.SignIn)
+	auth.Post("/sign-out", middleware.HasUserUnregistered, api.SignOut)
+	auth.Post("/me", middleware.HasUserUnregistered, api.Me)
 
 	auth.Put("/forgot-password", middleware.HasUserUnregistered)
 }
 
 func user() {
-	user := api.Group("/user")
+	user := api_router.Group("/user")
 	
 	user.Get("/:userId/info", middleware.HasUserUnregistered)
 	user.Get("/:userId/blogs", middleware.HasUserUnregistered)
@@ -38,7 +38,7 @@ func user() {
 }
 
 func blog() {
-	blog := api.Group("/blog")
+	blog := api_router.Group("/blog")
 
 	blog.Get("/all", middleware.HasUserUnregistered)
 	blog.Get("/:blogId", middleware.HasUserUnregistered)

@@ -6,15 +6,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var security fiber.Router
+var security_router fiber.Router
 
 func Security(app *fiber.App) {
-	security = app.Group("/security")
+	security_router = app.Group("/security")
 	access()
 }
 
 func access() {
-	access := security.Group("/access")
+	access := security_router.Group("/access")
 
 	access.Post("/email", middleware.HasUserUnregistered)
 }
