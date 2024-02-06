@@ -2,6 +2,7 @@ package router
 
 import (
 	"blog/controller"
+	"blog/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,10 +19,10 @@ func Router(app *fiber.App) {
 func auth() {
 	auth := api.Group("/auth")
 
-	auth.Post("/sign-up", controller.SignUp)
-	auth.Post("/sign-in", controller.SignIn)
-	auth.Post("/sign-out", controller.SignOut)
-	auth.Post("/me", controller.Me)
+	auth.Post("/sign-up", middleware.HasUserUnregistered, controller.SignUp)
+	auth.Post("/sign-in", middleware.HasUserUnregistered, controller.SignIn)
+	auth.Post("/sign-out", middleware.HasUserUnregistered, controller.SignOut)
+	auth.Post("/me", middleware.HasUserUnregistered, controller.Me)
 }
 
 func user() {
