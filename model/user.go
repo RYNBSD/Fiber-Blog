@@ -100,7 +100,7 @@ func (u *User) SelectById() bool {
 	}
 
 	const query = `
-		SELECT "username", "email", "picture"
+		SELECT "username", "picture"
 		FROM "user"
 		WHERE "id"=$1
 		LIMIT 1
@@ -131,7 +131,7 @@ func (u *User) SelectByEmail() bool {
 	}
 
 	const query = `
-		SELECT "username", "email", "picture"
+		SELECT "id", "username", "picture"
 		FROM "user"
 		WHERE "email"=$1
 		LIMIT 1
