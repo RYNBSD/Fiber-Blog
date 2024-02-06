@@ -23,10 +23,21 @@ func SignUp(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
 
+	user := model.User{
+		Username: body.Username,
+		Email:    body.Email,
+		Password: "",
+		Picture:  "",
+	}
+
+	if found := user.SelectByEmail(); found {
+		return fiber.NewError(fiber.StatusBadRequest, "Email already exists")
+	}
+
 	// util.EscapeStrings(&body.Username, &body.Password)
 	picture, err := c.FormFile("picture")
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	convert := file.Converter{Files: []*multipart.FileHeader{picture}}
@@ -37,13 +48,7 @@ func SignUp(c *fiber.Ctx) error {
 
 	upload := file.Uploader{Files: converted}
 	uploaded := upload.Upload()[0]
-
-	user := model.User{
-		Username: body.Username,
-		Email:    body.Email,
-		Password: "",
-		Picture:  uploaded,
-	}
+	user.Picture = uploaded
 
 	if user.Password, err = util.HashPassword(body.Password); err != nil {
 		panic(err)
