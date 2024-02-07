@@ -1,6 +1,9 @@
 package model
 
-import "blog/types"
+import (
+	"blog/types"
+	"database/sql"
+)
 
 func (b *Blog) CreateBlog(images ...string) {
 	Connect()
@@ -141,6 +144,37 @@ func (b *Blog) SelectBlogComments() []types.Map {
 	scanUnknownColumns(rows, &comments)
 
 	return comments
+}
+
+func (l *BlogLikes) ToggleLike() bool {
+	Connect()
+
+	found := false
+
+	const find = `SELECT "id" FROM "blogLikes" WHERE "blogId"=$1 AND "userId"=$1 LIMIT 1`
+	_, err := DB.Query(find, l.BlogId, l.LikerId)
+	switch (err) {
+	case sql.ErrNoRows:
+		found = false
+	default:
+		panic(err)
+	}
+
+	if found {
+		const delete = `DELETE FROM "blogLikes" WHERE "blogId"=$1 AND "userId"=$1`
+		_, err := DB.Exec(delete, l.BlogId, l.LikerId)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		const create = `INSERT INTO "blogLikes"("blogId", "userId") VALUES ($1, $2)`
+		_, err := DB.Exec(create, l.BlogId, l.LikerId)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return !found
 }
 
 func (l *BlogLikes) NewLike() {

@@ -83,7 +83,10 @@ func Like(c *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	bl := model.BlogLikes{BlogId: blogId, LikerId: userId}
+	bl.ToggleLike()
+
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func CreateBlog(c *fiber.Ctx) error {
