@@ -11,13 +11,31 @@ import (
 )
 
 func Info(c *fiber.Ctx) error {
+	userId := c.Params("userId", "")
+	if len(userId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	user := model.User{Id: userId}
+	user.SelectById()
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"user": user,
+	})
 }
 
 func Blogs(c *fiber.Ctx) error {
+	userId := c.Params("userId", "")
+	if len(userId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	user := model.User{Id: userId}
+	blogs := user.SelectBlogs()
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"blogs": blogs,
+	})
 }
 
 func Update(c *fiber.Ctx) error {
@@ -62,7 +80,7 @@ func Update(c *fiber.Ctx) error {
 	}
 
 	user.Update()
-	return c.SendStatus(fiber.StatusBadRequest)
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func Delete(c *fiber.Ctx) error {
@@ -81,5 +99,5 @@ func Delete(c *fiber.Ctx) error {
 		panic(err)
 	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	return c.SendStatus(fiber.StatusOK)
 }

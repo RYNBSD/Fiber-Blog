@@ -4,7 +4,6 @@ import (
 	"blog/types"
 	"blog/util"
 	"database/sql"
-	"fmt"
 	"sync"
 )
 
@@ -53,9 +52,9 @@ func (u *User) Delete() {
 
 	// Get blog IDs to delete there images
 	IDs := make([]string, 0)
-	rows, err := DB.Query("SELECT \"id\" FROM \"blog\" WHERE \"bloggerId\"=$1", u.Id);
+	rows, err := DB.Query("SELECT \"id\" FROM \"blog\" WHERE \"bloggerId\"=$1", u.Id)
 
-	if  err != nil {
+	if err != nil {
 		panic(err)
 	} else {
 		defer rows.Close()
@@ -154,6 +153,29 @@ func (u *User) SelectByEmail() bool {
 	return true
 }
 
+func (u *User) SelectBlogs() []types.Map {
+	Connect()
+
+	const query = `
+	SELECT b.id, b.title, b.description, ARRAY_AGG(bi.image) AS images, u.id AS "bloggerId", u.username, u.picture, COUNT(bl.id) AS likes, COUNT(bc.id) AS comments FROM blog b
+	LEFT JOIN "user" u ON u."id" = b."bloggerId"
+	LEFT JOIN "blogLikes" bl ON bl."blogId" = b."id"
+	LEFT JOIN "blogComments" bc ON bc."blogId" = b."id"
+	LEFT JOIN "blogImages" bi ON bi."blogId" = b."id"
+	WHERE u.id = $1
+	GROUP BY b.id, b.title, b.description, u.id, u.username, u.picture
+	`
+
+	rows, err := DB.Query(query, u.Id)
+	if err != nil {
+		panic(err)
+	}
+
+	blogs := []types.Map{}
+	scanUnknownColumns(rows, &blogs)
+	return blogs
+}
+
 func (u *User) SelectPasswordById() bool {
 	if err := util.IsUUID(u.Id); err != nil {
 		panic(err)
@@ -202,29 +224,4 @@ func (u *User) SelectPasswordByEmail() bool {
 
 	row.Scan(&u.Password)
 	return true
-}
-
-// get user info and blogs
-func (u *User) Profile() ([]types.Map, error) {
-	Connect()
-
-	if found := u.SelectById(); !found {
-		return nil, fmt.Errorf("User not found")
-	}
-
-	const query = ``
-
-	rows, err := DB.Query(query, u.Id)
-	if err != nil {
-		panic(err)
-	}
-
-	defer rows.Close()
-	blogs := make([]types.Map, 0)
-	scanUnknownColumns(rows, &blogs)
-
-	if err := rows.Err(); err != nil {
-		panic(err)
-	}
-	return blogs, nil
 }
