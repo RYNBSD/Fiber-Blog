@@ -72,7 +72,7 @@ func (b *Blog) SelectBlogs() []types.Map {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	blogs := []types.Map{}
 	scanUnknownColumns(rows, &blogs)
 	return blogs
@@ -105,12 +105,42 @@ func (b *Blog) SelectBlog() types.Map {
 	return blogs[0]
 }
 
-func SelectBlogComments() {
+func (b *Blog) SelectBlogLikes() []types.Map {
+	Connect()
+	const query = `
+	SELECT u.username, u.picture FROM "blogLikes" bl
+	INNER JOIN "user" u ON u.id = bl."likerId"
+	WHERE bl."blogId"= $1
+	`
 
+	rows, err := DB.Query(query, b.Id)
+	if err != nil {
+		panic(err)
+	}
+
+	likes := []types.Map{}
+	scanUnknownColumns(rows, &likes)
+
+	return likes
 }
 
-func SelectBlogLikes() {
+func (b *Blog) SelectBlogComments() []types.Map {
+	Connect()
+	const query = `
+	SELECT u.username, u.picture, bc.comment FROM "blogComments" bc
+	INNER JOIN "user" u ON u.id = bc."commenterId"
+	WHERE bc."blogId" = $1
+	`
 
+	rows, err := DB.Query(query, b.Id)
+	if err != nil {
+		panic(err)
+	}
+
+	comments := []types.Map{}
+	scanUnknownColumns(rows, &comments)
+
+	return comments
 }
 
 func (l *BlogLikes) NewLike() {

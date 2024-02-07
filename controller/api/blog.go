@@ -39,16 +39,36 @@ func Blog(c *fiber.Ctx) error {
 }
 
 func Likes(c *fiber.Ctx) error {
+	blogId := c.Params("blogId", "")
+	if len(blogId) == 0 {
+		return fiber.ErrBadRequest
+	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	blog := model.Blog{Id: blogId}
+	likes := blog.SelectBlogLikes()
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"likes": likes,
+	})
 }
 
 func Comments(c *fiber.Ctx) error {
+	blogId := c.Params("blogId", "")
+	if len(blogId) == 0 {
+		return fiber.ErrBadRequest
+	}
+
+	
 
 	return c.SendStatus(fiber.StatusBadRequest)
 }
 
 func Like(c *fiber.Ctx) error {
+	blogId := c.Query("blogId", "")
+	userId := c.Query("userId", "")
+	if len(blogId) == 0 || len(userId) == 0 {
+		return fiber.ErrBadRequest
+	}
 
 	return c.SendStatus(fiber.StatusBadRequest)
 }
