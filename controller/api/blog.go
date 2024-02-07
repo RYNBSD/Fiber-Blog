@@ -47,7 +47,12 @@ func Likes(c *fiber.Ctx) error {
 	blog := model.Blog{Id: blogId}
 	likes := blog.SelectBlogLikes()
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	status := fiber.StatusOK
+	if len(likes) == 0 {
+		status = fiber.StatusNoContent
+	}
+
+	return c.Status(status).JSON(fiber.Map{
 		"likes": likes,
 	})
 }
@@ -58,9 +63,17 @@ func Comments(c *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	
+	blog := model.Blog{Id: blogId}
+	comments := blog.SelectBlogComments()
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	status := fiber.StatusOK
+	if len(comments) == 0 {
+		status = fiber.StatusNoContent
+	}
+
+	return c.Status(status).JSON(fiber.Map{
+		"comments": comments,
+	})
 }
 
 func Like(c *fiber.Ctx) error {
