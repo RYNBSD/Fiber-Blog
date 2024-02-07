@@ -45,6 +45,8 @@ func blog() {
 	blog.Get("/:blogId/likes", middleware.HasUserUnregistered, api.Likes)
 	blog.Get("/:blogId/comments", middleware.HasUserUnregistered, api.Comments)
 
+	blog.Patch("/like", middleware.HasUserRegistered, api.Like)
+
 	blog.Post("/", middleware.HasUserRegistered, api.CreateBlog)
 	blog.Post("/:blogId/comment", middleware.HasUserRegistered, api.CreateComment)
 

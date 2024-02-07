@@ -48,6 +48,11 @@ func Comments(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusBadRequest)
 }
 
+func Like(c *fiber.Ctx) error {
+
+	return c.SendStatus(fiber.StatusBadRequest)
+}
+
 func CreateBlog(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusBadRequest)
