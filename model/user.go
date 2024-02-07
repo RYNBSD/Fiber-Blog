@@ -37,11 +37,10 @@ func (u *User) Update() {
 
 func (u *User) Delete() {
 	Connect()
-	id := u.Id
 
 	// Delete user picture from public
 	picture := ""
-	row := DB.QueryRow("SELECT \"picture\" FROM \"user\" WHERE \"id\"=$1 LIMIT 1", id)
+	row := DB.QueryRow("SELECT \"picture\" FROM \"user\" WHERE \"id\"=$1 LIMIT 1", u.Id)
 
 	if err := row.Err(); err != nil {
 		panic(err)
@@ -54,7 +53,9 @@ func (u *User) Delete() {
 
 	// Get blog IDs to delete there images
 	IDs := make([]string, 0)
-	if rows, err := DB.Query("SELECT \"id\" FROM \"blog\" WHERE \"bloggerId\"=$1", id); err != nil {
+	rows, err := DB.Query("SELECT \"id\" FROM \"blog\" WHERE \"bloggerId\"=$1", u.Id);
+
+	if  err != nil {
 		panic(err)
 	} else {
 		defer rows.Close()
@@ -76,6 +77,7 @@ func (u *User) Delete() {
 	wg := sync.WaitGroup{}
 	for _, id := range IDs {
 		wg.Add(1)
+
 		go func(id string) {
 			defer wg.Done()
 			blog := Blog{Id: id}
@@ -84,7 +86,7 @@ func (u *User) Delete() {
 	}
 	wg.Wait()
 
-	if _, err := DB.Exec("DELETE FROM \"user\" WHERE \"id\"=$1", id); err != nil {
+	if _, err := DB.Exec("DELETE FROM \"user\" WHERE \"id\"=$1", u.Id); err != nil {
 		panic(err)
 	}
 }

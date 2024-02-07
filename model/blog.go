@@ -22,10 +22,11 @@ func (blog Blog) UpdateBlog(images ...string) {
 
 func (blog Blog) DeleteBlog() {
 	Connect()
-	id := blog.Id
 
-	const imagesSql = `SELECT image from "blogImages" WHERE "id"=$1`
-	if rows, err := DB.Query(imagesSql, id); err != nil {
+	const imagesSql = `SELECT image from "blogImages" WHERE "blogId"=$1`
+	rows, err := DB.Query(imagesSql, blog.Id);
+
+	if err != nil {
 		panic(err)
 	} else {
 		defer rows.Close()
@@ -46,7 +47,7 @@ func (blog Blog) DeleteBlog() {
 	}
 
 	const sql = `DELETE FROM "blog" WHERE "id"=$1`
-	if _, err := DB.Exec(sql, id); err != nil {
+	if _, err := DB.Exec(sql, blog.Id); err != nil {
 		panic(err)
 	}
 }

@@ -66,6 +66,20 @@ func Update(c *fiber.Ctx) error {
 }
 
 func Delete(c *fiber.Ctx) error {
+	session, err := config.Store.Get(c)
+	if err != nil {
+		panic(err)
+	}
+
+	sessionUser := session.Get(config.USER).(config.User)
+	user := model.User{Id: sessionUser.Id}
+
+	user.Delete()
+
+	session.Set(config.USER, config.User{Id: ""})
+	if err := session.Save(); err != nil {
+		panic(err)
+	}
 
 	return c.SendStatus(fiber.StatusBadRequest)
 }
