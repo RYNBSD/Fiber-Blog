@@ -21,8 +21,21 @@ func All(c *fiber.Ctx) error {
 }
 
 func Blog(c *fiber.Ctx) error {
+	blogId := c.Params("blogId", "")
+	if len(blogId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "")
+	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	b := model.Blog{Id: blogId}
+	blog := b.SelectBlog()
+
+	if blog == nil {
+		return fiber.ErrNotFound
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"blog": blog,
+	})
 }
 
 func Likes(c *fiber.Ctx) error {
