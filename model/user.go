@@ -23,12 +23,12 @@ func (u *User) Update() {
 	Connect()
 
 	if len(u.Picture) > 0 {
-		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "picture"=$4, "updatedAt"="NOW()" WHERE "id"=$5`
+		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "picture"=$4, "updatedAt"="NOW()" WHERE "id"=$5`
 		if _, err := DB.Exec(query, u.Username, u.Email, u.Password, u.Picture, u.Id); err != nil {
 			panic(err)
 		}
 	} else {
-		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "password"=$3, "updatedAt"="NOW()" WHERE "id"=$4`
+		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "updatedAt"="NOW()" WHERE "id"=$4`
 		if _, err := DB.Exec(query, u.Username, u.Email, u.Password, u.Id); err != nil {
 			panic(err)
 		}

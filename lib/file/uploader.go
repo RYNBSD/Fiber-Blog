@@ -11,7 +11,7 @@ import (
 )
 
 type IUploader interface {
-	Upload() []string
+	Upload() ([]string, bool)
 	Remove(...string)
 
 	uniqueFileName() string
@@ -21,7 +21,7 @@ type Uploader struct {
 	Files [][]byte
 }
 
-func (u *Uploader) Upload() []string {
+func (u *Uploader) Upload() ([]string, bool) {
 	publicDir := util.PublicDir()
 	uploaded := make([]string, 0)
 	wg := sync.WaitGroup{}
@@ -53,7 +53,7 @@ func (u *Uploader) Upload() []string {
 	}
 
 	wg.Wait()
-	return uploaded
+	return uploaded, len(uploaded) > 0
 }
 
 func (u *Uploader) Remove(paths ...string) {

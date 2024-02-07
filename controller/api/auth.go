@@ -46,8 +46,11 @@ func SignUp(c *fiber.Ctx) error {
 	}
 
 	upload := file.Uploader{Files: converted}
-	uploaded := upload.Upload()[0]
-	user.Picture = uploaded
+	uploaded, isUploaded := upload.Upload()
+	if !isUploaded {
+		return fiber.ErrInternalServerError
+	}
+	user.Picture = uploaded[0]
 
 	if user.Password, err = util.HashPassword(body.Password); err != nil {
 		panic(err)
