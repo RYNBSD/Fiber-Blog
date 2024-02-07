@@ -1,10 +1,23 @@
 package api
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"blog/model"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 func All(c *fiber.Ctx) error {
+	blog := model.Blog{}
+	blogs := blog.SelectBlogs()
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	status := fiber.StatusOK
+	if len(blogs) == 0 {
+		status = fiber.StatusNoContent
+	}
+
+	return c.Status(status).JSON(fiber.Map{
+		"blogs": blogs,
+	})
 }
 
 func Blog(c *fiber.Ctx) error {
