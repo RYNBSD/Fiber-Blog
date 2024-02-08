@@ -4,3 +4,7 @@ type CreateBlog struct {
 	Title string `json:"title" validate:"required,min=1"`
 	Description string `json:"description" validate:"required,min=1"`
 }
+
+type CreateComment struct {
+	Comment string `json:"comment" validate:"required,min=1"`
+}

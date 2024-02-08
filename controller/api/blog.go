@@ -139,8 +139,36 @@ func CreateBlog(c *fiber.Ctx) error {
 }
 
 func CreateComment(c *fiber.Ctx) error {
+	body := schema.CreateComment{}
+	if err := c.BodyParser(&body); err != nil {
+		panic(err)
+	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	message := util.Validate(body)
+	if len(message) > 0 {
+		return fiber.NewError(fiber.StatusBadRequest, message)
+	}
+
+	blogId := c.Params("blogId", "")
+	if err := util.IsUUID(blogId); err != nil {
+		panic(err)
+	}
+
+	session, err := config.Store.Get(c)
+	if err != nil {
+		panic(err)
+	}
+
+	sessionUser := session.Get(config.USER).(config.User)
+	comment := model.BlogComments{
+		BlogId: blogId,
+		CommenterId: sessionUser.Id,
+		Comment: body.Comment,
+	}
+
+	comment.CreateComment()
+
+	return c.SendStatus(fiber.StatusCreated)
 }
 
 func UpdateBlog(c *fiber.Ctx) error {

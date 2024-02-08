@@ -154,9 +154,9 @@ func (l *BlogLikes) ToggleLike() bool {
 
 	found := false
 
-	const find = `SELECT "id" FROM "blogLikes" WHERE "blogId"=$1 AND "userId"=$1 LIMIT 1`
+	const find = `SELECT "id" FROM "blogLikes" WHERE "blogId"=$1 AND "userId"=$2 LIMIT 1`
 	_, err := DB.Query(find, l.BlogId, l.LikerId)
-	switch (err) {
+	switch err {
 	case sql.ErrNoRows:
 		found = false
 	case nil:
@@ -166,7 +166,7 @@ func (l *BlogLikes) ToggleLike() bool {
 	}
 
 	if found {
-		const delete = `DELETE FROM "blogLikes" WHERE "blogId"=$1 AND "userId"=$1`
+		const delete = `DELETE FROM "blogLikes" WHERE "blogId"=$1 AND "userId"=$2`
 		_, err := DB.Exec(delete, l.BlogId, l.LikerId)
 		if err != nil {
 			panic(err)
@@ -182,18 +182,7 @@ func (l *BlogLikes) ToggleLike() bool {
 	return !found
 }
 
-func (l *BlogLikes) NewLike() {
-	Connect()
-	const sql = `INSERT INTO "blogLikes" ("likerId", "blogId") VALUES ($1, $2)`
-
-	if _, err := DB.Exec(sql, l.LikerId, l.BlogId); err != nil {
-		panic(err)
-	}
-}
-
-func (l *BlogLikes) RemoveLike() {}
-
-func (c *BlogComments) NewComment() {
+func (c *BlogComments) CreateComment() {
 	Connect()
 	const sql = `INSERT INTO "blogComments" ("commenterId", "blogId", "comment") VALUES ($1, $2, $3)`
 
@@ -202,4 +191,8 @@ func (c *BlogComments) NewComment() {
 	}
 }
 
-func (c *BlogComments) RemoveComment() {}
+func (c *BlogComments) UpdateComment() {
+
+}
+
+func (c *BlogComments) DeleteComment() {}
