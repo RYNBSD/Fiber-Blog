@@ -2,17 +2,20 @@ package model
 
 import (
 	"blog/types"
+	"blog/util"
 	"database/sql"
 )
 
 func (b *Blog) CreateBlog(images ...string) {
 	Connect()
-	createImages(b.Id, images...)
-	const sql = `INSERT INTO "blog" ("title", "description", "bloggerId") VALUES ($1, $2, $3)`
+	id := util.UUIDv4()
 
-	if _, err := DB.Exec(sql, b.Title, b.Description, b.BloggerId); err != nil {
+	const sql = `INSERT INTO "blog" ("id", "title", "description", "bloggerId") VALUES ($1, $2, $3)`
+	if _, err := DB.Exec(sql, id, b.Title, b.Description, b.BloggerId); err != nil {
 		panic(err)
 	}
+
+	createImages(id, images...)
 }
 
 func (b *Blog) UpdateBlog(images ...string) {
@@ -156,6 +159,8 @@ func (l *BlogLikes) ToggleLike() bool {
 	switch (err) {
 	case sql.ErrNoRows:
 		found = false
+	case nil:
+		found = true
 	default:
 		panic(err)
 	}

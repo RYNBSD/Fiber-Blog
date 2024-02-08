@@ -1,7 +1,11 @@
 package api
 
 import (
+	"blog/config"
+	"blog/lib/file"
 	"blog/model"
+	"blog/schema"
+	"blog/util"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -90,8 +94,48 @@ func Like(c *fiber.Ctx) error {
 }
 
 func CreateBlog(c *fiber.Ctx) error {
+	body := schema.CreateBlog{}
+	if err := c.BodyParser(&body); err != nil {
+		panic(err)
+	}
 
-	return c.SendStatus(fiber.StatusBadRequest)
+	message := util.Validate(body)
+	if len(message) > 0 {
+		return fiber.NewError(fiber.StatusBadRequest, message)
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		panic(err)
+	}
+
+	converter := file.Converter{Files: form.File["image"]}
+	converted, isConverted := converter.Convert()
+	if !isConverted {
+		return fiber.ErrUnsupportedMediaType
+	}
+
+	uploader := file.Uploader{Files: converted}
+	uploaded, isUploaded := uploader.Upload()
+	if !isUploaded {
+		return fiber.ErrInternalServerError
+	}
+
+	session, err := config.Store.Get(c)
+	if err != nil {
+		panic(err)
+	}
+
+	sessionUser := session.Get(config.USER).(config.User)
+	blog := model.Blog{
+		Title:       body.Title,
+		Description: body.Description,
+		BloggerId:   sessionUser.Id,
+	}
+
+	blog.CreateBlog(uploaded...)
+
+	return c.SendStatus(fiber.StatusCreated)
 }
 
 func CreateComment(c *fiber.Ctx) error {
