@@ -257,6 +257,27 @@ func DeleteBlog(c *fiber.Ctx) error {
 }
 
 func DeleteComment(c *fiber.Ctx) error {
+	blogId := c.Params("blogId", "")
+	if len(blogId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "Empty blogId")
+	} else if err := util.IsUUID(blogId); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
+	}
 
+	commentId, err := c.ParamsInt("commentId", 0)
+	if err != nil {
+		panic(err)
+	} else if commentId <= 0 {
+		return fiber.NewError(fiber.StatusBadRequest)
+	}
+
+	user := c.Locals(constant.LocalUser).(model.User)
+	comment := model.BlogComments{
+		Id: commentId,
+		BlogId: blogId,
+		CommenterId: user.Id,
+	}
+
+	comment.DeleteComment()
 	return c.SendStatus(fiber.StatusBadRequest)
 }

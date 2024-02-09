@@ -200,4 +200,11 @@ func (c *BlogComments) UpdateComment() {
 	}
 }
 
-func (c *BlogComments) DeleteComment() {}
+func (c *BlogComments) DeleteComment() {
+	Connect()
+	const query = `DELETE FROM "blogComments" WHERE "id"=$1 AND "blogId"=$2 AND "commenterId"=$3`
+
+	if _, err := DB.Exec(query, c.Id, c.BlogId, c.CommenterId); err != nil {
+		panic(err)
+	}
+}
