@@ -21,9 +21,9 @@ func (b *Blog) CreateBlog(images ...string) {
 func (b *Blog) UpdateBlog(images ...string) {
 	Connect()
 	createImages(b.Id, images...)
-	const sql = `UPDATE blog`
 
-	if _, err := DB.Exec(sql); err != nil {
+	const sql = `UPDATE "blog" SET "title"=$1, "description"=$2 WHERE "id"=$3`
+	if _, err := DB.Exec(sql, b.Title, b.Description, b.Id); err != nil {
 		panic(err)
 	}
 }

@@ -150,8 +150,10 @@ func CreateComment(c *fiber.Ctx) error {
 	}
 
 	blogId := c.Params("blogId", "")
-	if err := util.IsUUID(blogId); err != nil {
-		panic(err)
+	if len(blogId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "Empty blogId")
+	} else if err := util.IsUUID(blogId); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
 	}
 
 	session, err := config.Store.Get(c)
@@ -172,11 +174,52 @@ func CreateComment(c *fiber.Ctx) error {
 }
 
 func UpdateBlog(c *fiber.Ctx) error {
+	body := schema.UpdateBlog{}
+	if err := c.BodyParser(&body); err != nil {
+		panic(err)
+	}
 
+	message := util.Validate(body)
+	if len(message) > 0 {
+		return fiber.NewError(fiber.StatusBadRequest, message)
+	}
+
+	blogId := c.Params("blogId", "")
+	if len(blogId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "Empty blogId")
+	} else if err := util.IsUUID(blogId); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
+	}
+
+	blog := model.Blog{
+		Id: blogId,
+		Title: body.Title,
+		Description: body.Description,
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		panic(err)
+	}
+
+	converter := file.Converter{Files: form.File["images"]}
+	converted, isConverted := converter.Convert()
+	if !isConverted {
+		return fiber.ErrUnsupportedMediaType
+	}
+
+	uploader := file.Uploader{Files: converted}
+	uploaded, isUploaded := uploader.Upload()
+	if !isUploaded {
+		return fiber.ErrInternalServerError
+	}
+
+	blog.UpdateBlog(uploaded...)
 	return c.SendStatus(fiber.StatusBadRequest)
 }
 
 func UpdateComment(c *fiber.Ctx) error {
+	body := schema.UpdateComment{}
 
 	return c.SendStatus(fiber.StatusBadRequest)
 }
