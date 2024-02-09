@@ -17,9 +17,3 @@ type UpdateBlog struct {
 type UpdateComment struct {
 	Comment string `json:"comment" validate:"required,min=1"`
 }
-
-type DeleteBlog struct {
-}
-
-type DeleteComment struct {
-}
