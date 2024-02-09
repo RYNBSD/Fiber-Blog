@@ -184,15 +184,20 @@ func (l *BlogLikes) ToggleLike() bool {
 
 func (c *BlogComments) CreateComment() {
 	Connect()
-	const sql = `INSERT INTO "blogComments" ("commenterId", "blogId", "comment") VALUES ($1, $2, $3)`
+	const query = `INSERT INTO "blogComments" ("commenterId", "blogId", "comment") VALUES ($1, $2, $3)`
 
-	if _, err := DB.Exec(sql, c.CommenterId, c.BlogId, c.Comment); err != nil {
+	if _, err := DB.Exec(query, c.CommenterId, c.BlogId, c.Comment); err != nil {
 		panic(err)
 	}
 }
 
 func (c *BlogComments) UpdateComment() {
+	Connect()
+	const query = `UPDATE "blogComments" SET "comment"=$1 WHERE "id"=$2 AND "blogId"=$3 AND "commenterId"=$4`
 
+	if _, err := DB.Exec(query, c.Comment, c.Id, c.BlogId, c.CommenterId); err != nil {
+		panic(err)
+	}
 }
 
 func (c *BlogComments) DeleteComment() {}

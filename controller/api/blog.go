@@ -2,6 +2,7 @@ package api
 
 import (
 	"blog/config"
+	"blog/constant"
 	"blog/lib/file"
 	"blog/model"
 	"blog/schema"
@@ -163,9 +164,9 @@ func CreateComment(c *fiber.Ctx) error {
 
 	sessionUser := session.Get(config.USER).(config.User)
 	comment := model.BlogComments{
-		BlogId: blogId,
+		BlogId:      blogId,
 		CommenterId: sessionUser.Id,
-		Comment: body.Comment,
+		Comment:     body.Comment,
 	}
 
 	comment.CreateComment()
@@ -192,8 +193,8 @@ func UpdateBlog(c *fiber.Ctx) error {
 	}
 
 	blog := model.Blog{
-		Id: blogId,
-		Title: body.Title,
+		Id:          blogId,
+		Title:       body.Title,
 		Description: body.Description,
 	}
 
@@ -220,7 +221,33 @@ func UpdateBlog(c *fiber.Ctx) error {
 
 func UpdateComment(c *fiber.Ctx) error {
 	body := schema.UpdateComment{}
+	if err := c.BodyParser(&body); err != nil {
+		panic(err)
+	}
 
+	blogId := c.Params("blogId", "")
+	if len(blogId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest,  "Empty blogId")
+	} else if err := util.IsUUID(blogId); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
+	}
+
+	commentId, err := c.ParamsInt("commentId", 0)
+	if err != nil {
+		panic(err)
+	} else if commentId <= 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "Empty commentId")
+	}
+
+	user := c.Locals(constant.LocalUser).(model.User)
+	comment := model.BlogComments{
+		Id: commentId,
+		BlogId: blogId,
+		CommenterId: user.Id,
+		Comment: body.Comment,
+	}
+
+	comment.UpdateComment()
 	return c.SendStatus(fiber.StatusBadRequest)
 }
 
