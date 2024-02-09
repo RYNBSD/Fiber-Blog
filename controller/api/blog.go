@@ -252,7 +252,17 @@ func UpdateComment(c *fiber.Ctx) error {
 }
 
 func DeleteBlog(c *fiber.Ctx) error {
+	blogId := c.Params("blogId", "")
+	if len(blogId) == 0 {
+		return fiber.NewError(fiber.StatusBadRequest, "Empty blogId")
+	} else if err := util.IsUUID(blogId); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
+	}
 
+	blog := model.Blog{
+		Id: blogId,
+	}
+	blog.DeleteBlog()
 	return c.SendStatus(fiber.StatusBadRequest)
 }
 

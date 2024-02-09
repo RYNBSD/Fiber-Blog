@@ -33,26 +33,25 @@ func (b *Blog) DeleteBlog() {
 
 	const imagesSql = `SELECT image from "blogImages" WHERE "blogId"=$1`
 	rows, err := DB.Query(imagesSql, b.Id)
-
 	if err != nil {
 		panic(err)
-	} else {
-		defer rows.Close()
-		images := make([]string, 0)
+	}
 
-		for rows.Next() {
-			image := ""
-			if err := rows.Scan(&image); err != nil {
-				panic(err)
-			}
-			images = append(images, image)
-		}
+	defer rows.Close()
+	images := make([]string, 0)
 
-		if err := rows.Err(); err != nil {
+	for rows.Next() {
+		image := ""
+		if err := rows.Scan(&image); err != nil {
 			panic(err)
 		}
-		deleteImages(images...)
+		images = append(images, image)
 	}
+
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
+	deleteImages(images...)
 
 	const sql = `DELETE FROM "blog" WHERE "id"=$1`
 	if _, err := DB.Exec(sql, b.Id); err != nil {
