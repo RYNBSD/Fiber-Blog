@@ -17,11 +17,7 @@ func HasUserRegistered(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "Invalid user id (uuid)")
 	}
 
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	session := config.GetSession(c)
 	sessionUser, ok := session.Get(config.USER).(config.User)
 	if !ok {
 		panic("Invalid user session")
@@ -56,11 +52,7 @@ func HasUserUnregistered(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "Invalid user id (uuid)")
 	}
 
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	session := config.GetSession(c)
 	sessionUser, ok := session.Get(config.USER).(config.User)
 	if !ok || len(sessionUser.Id) == 0 {
 		return c.Next()

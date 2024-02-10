@@ -33,7 +33,7 @@ func SignUp(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Email already exists")
 	}
 
-	// util.EscapeStrings(&body.Username, &body.Password)
+	util.EscapeStrings(&body.Username, &body.Password)
 	picture, err := c.FormFile("picture")
 	if err != nil {
 		panic(err)
@@ -61,7 +61,7 @@ func SignUp(c *fiber.Ctx) error {
 }
 
 func SignIn(c *fiber.Ctx) error {
-	body := &schema.SignIn{}
+	body := schema.SignIn{}
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
@@ -71,8 +71,7 @@ func SignIn(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
 
-	// util.EscapeStrings(&body.Password)
-
+	util.EscapeStrings(&body.Password)
 	user := model.User{
 		Email: body.Email,
 	}
@@ -89,11 +88,7 @@ func SignIn(c *fiber.Ctx) error {
 		return fiber.ErrNotFound
 	}
 
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	session := config.GetSession(c)
 	session.Set(config.USER, config.User{Id: user.Id})
 	if err := session.Save(); err != nil {
 		panic(err)
@@ -105,10 +100,7 @@ func SignIn(c *fiber.Ctx) error {
 }
 
 func SignOut(c *fiber.Ctx) error {
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
+	session := config.GetSession(c)
 
 	user := config.User{Id: ""}
 	access := config.Access{Key: "", Iv: ""}
@@ -139,11 +131,7 @@ func Me(c *fiber.Ctx) error {
 		return fiber.ErrNotFound
 	}
 
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	session := config.GetSession(c)
 	session.Set(config.USER, config.User{Id: user.Id})
 	if err := session.Save(); err != nil {
 		panic(err)

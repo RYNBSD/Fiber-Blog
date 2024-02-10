@@ -105,6 +105,7 @@ func CreateBlog(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
 
+	util.EscapeStrings(&body.Title, &body.Description)
 	form, err := c.MultipartForm()
 	if err != nil {
 		panic(err)
@@ -122,11 +123,7 @@ func CreateBlog(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	session := config.GetSession(c)
 	sessionUser := session.Get(config.USER).(config.User)
 	blog := model.Blog{
 		Title:       body.Title,
@@ -157,11 +154,8 @@ func CreateComment(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
 	}
 
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	util.EscapeStrings(&body.Comment)
+	session := config.GetSession(c)
 	sessionUser := session.Get(config.USER).(config.User)
 	comment := model.BlogComments{
 		BlogId:      blogId,
@@ -192,6 +186,7 @@ func UpdateBlog(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
 	}
 
+	util.EscapeStrings(&body.Title, &body.Description)
 	blog := model.Blog{
 		Id:          blogId,
 		Title:       body.Title,
@@ -225,9 +220,14 @@ func UpdateComment(c *fiber.Ctx) error {
 		panic(err)
 	}
 
+	message := util.Validate(body)
+	if len(message) > 0 {
+		return fiber.NewError(fiber.StatusBadRequest, message)
+	}
+
 	blogId := c.Params("blogId", "")
 	if len(blogId) == 0 {
-		return fiber.NewError(fiber.StatusBadRequest,  "Empty blogId")
+		return fiber.NewError(fiber.StatusBadRequest, "Empty blogId")
 	} else if err := util.IsUUID(blogId); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid blogId")
 	}
@@ -239,12 +239,13 @@ func UpdateComment(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Empty commentId")
 	}
 
+	util.EscapeStrings(&body.Comment)
 	user := c.Locals(constant.LocalUser).(model.User)
 	comment := model.BlogComments{
-		Id: commentId,
-		BlogId: blogId,
+		Id:          commentId,
+		BlogId:      blogId,
 		CommenterId: user.Id,
-		Comment: body.Comment,
+		Comment:     body.Comment,
 	}
 
 	comment.UpdateComment()
@@ -283,8 +284,8 @@ func DeleteComment(c *fiber.Ctx) error {
 
 	user := c.Locals(constant.LocalUser).(model.User)
 	comment := model.BlogComments{
-		Id: commentId,
-		BlogId: blogId,
+		Id:          commentId,
+		BlogId:      blogId,
 		CommenterId: user.Id,
 	}
 

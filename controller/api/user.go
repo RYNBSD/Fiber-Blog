@@ -5,6 +5,7 @@ import (
 	"blog/lib/file"
 	"blog/model"
 	"blog/schema"
+	"blog/util"
 	"mime/multipart"
 
 	"github.com/gofiber/fiber/v2"
@@ -44,16 +45,17 @@ func Update(c *fiber.Ctx) error {
 		panic(err)
 	}
 
+	message := util.Validate(body)
+	if len(message) > 0 {
+		return fiber.NewError(fiber.StatusBadRequest, message)
+	}
+
 	user := model.User{Email: body.Email}
 	if found := user.SelectByEmail(); found {
 		return fiber.NewError(fiber.StatusBadRequest, "Email already exists")
 	}
 
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	session := config.GetSession(c)
 	sessionUser := session.Get(config.USER).(config.User)
 	user.Id = sessionUser.Id
 	user.Username = body.Username
@@ -84,11 +86,7 @@ func Update(c *fiber.Ctx) error {
 }
 
 func Delete(c *fiber.Ctx) error {
-	session, err := config.Store.Get(c)
-	if err != nil {
-		panic(err)
-	}
-
+	session := config.GetSession(c)
 	sessionUser := session.Get(config.USER).(config.User)
 	user := model.User{Id: sessionUser.Id}
 

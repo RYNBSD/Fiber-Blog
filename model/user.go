@@ -117,7 +117,9 @@ func (u *User) SelectById() bool {
 		panic(err)
 	}
 
-	row.Scan(&u.Username, &u.Email, &u.Picture)
+	if err := row.Scan(&u.Username, &u.Email, &u.Picture); err == sql.ErrNoRows {
+		return false
+	}
 	u.Password = ""
 	return true
 }
@@ -148,7 +150,9 @@ func (u *User) SelectByEmail() bool {
 		panic(err)
 	}
 
-	row.Scan(&u.Username, &u.Email, &u.Picture)
+	if err := row.Scan(&u.Id, &u.Username, &u.Picture); err == sql.ErrNoRows {
+		return false
+	}
 	u.Password = ""
 	return true
 }
@@ -177,6 +181,8 @@ func (u *User) SelectBlogs() []types.Map {
 }
 
 func (u *User) SelectPasswordById() bool {
+	Connect()
+
 	if err := util.IsUUID(u.Id); err != nil {
 		panic(err)
 	}
@@ -202,6 +208,8 @@ func (u *User) SelectPasswordById() bool {
 }
 
 func (u *User) SelectPasswordByEmail() bool {
+	Connect()
+	
 	if err := util.IsEmail(u.Email); err != nil {
 		panic(err)
 	}
@@ -222,6 +230,8 @@ func (u *User) SelectPasswordByEmail() bool {
 		panic(err)
 	}
 
-	row.Scan(&u.Password)
+	if err := row.Scan(&u.Password); err == sql.ErrNoRows {
+		return false
+	}
 	return true
 }
