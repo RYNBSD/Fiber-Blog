@@ -50,23 +50,15 @@ func Update(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
 
-	user := model.User{Email: body.Email}
-	if found := user.SelectByEmail(); found {
-		return fiber.NewError(fiber.StatusBadRequest, "Email already exists")
-	}
-
 	session := config.GetSession(c)
 	sessionUser := session.Get(config.USER).(config.User)
-	user.Id = sessionUser.Id
-	user.Username = body.Username
-	user.Picture = ""
-
-	picture, err := c.FormFile("picture")
-	if err != nil {
-		panic(err)
+	user := model.User{
+		Id:       sessionUser.Id,
+		Email:    body.Email,
+		Username: body.Username,
 	}
 
-	if picture != nil {
+	if picture, err := c.FormFile("picture"); picture != nil && err != nil {
 		converter := file.Converter{Files: []*multipart.FileHeader{picture}}
 		converted, isConverted := converter.Convert()
 		if !isConverted {

@@ -20,12 +20,12 @@ func HasUserRegistered(c *fiber.Ctx) error {
 	session := config.GetSession(c)
 	sessionUser, ok := session.Get(config.USER).(config.User)
 	if !ok {
-		panic("Invalid user session")
+		return fiber.NewError(fiber.StatusNetworkAuthenticationRequired, "User is not sign in")
 	} else if err := util.IsUUID(sessionUser.Id); err != nil {
-		panic(err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Invalid user id")
 	}
 
-	if (userId != sessionUser.Id) {
+	if userId != sessionUser.Id {
 		return fiber.NewError(fiber.StatusUnauthorized, "Invalid user id")
 	}
 
@@ -57,10 +57,10 @@ func HasUserUnregistered(c *fiber.Ctx) error {
 	if !ok || len(sessionUser.Id) == 0 {
 		return c.Next()
 	} else if err := util.IsUUID(sessionUser.Id); err != nil {
-		panic(err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Invalid user id")
 	}
 
-	if (userId != sessionUser.Id) {
+	if userId != sessionUser.Id {
 		return fiber.NewError(fiber.StatusUnauthorized, "Invalid user id")
 	}
 

@@ -22,13 +22,13 @@ func (u *User) Update() {
 	Connect()
 
 	if len(u.Picture) > 0 {
-		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "picture"=$4, "updatedAt"="NOW()" WHERE "id"=$5`
-		if _, err := DB.Exec(query, u.Username, u.Email, u.Password, u.Picture, u.Id); err != nil {
+		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "picture"=$3, "updatedAt"=NOW() WHERE "id"=$4`
+		if _, err := DB.Exec(query, u.Username, u.Email, u.Picture, u.Id); err != nil {
 			panic(err)
 		}
 	} else {
-		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "updatedAt"="NOW()" WHERE "id"=$4`
-		if _, err := DB.Exec(query, u.Username, u.Email, u.Password, u.Id); err != nil {
+		const query = `UPDATE "user" SET "username"=$1, "email"=$2, "updatedAt"=NOW() WHERE "id"=$3`
+		if _, err := DB.Exec(query, u.Username, u.Email, u.Id); err != nil {
 			panic(err)
 		}
 	}
@@ -101,7 +101,7 @@ func (u *User) SelectById() bool {
 	}
 
 	const query = `
-		SELECT "username", "picture"
+		SELECT "username", "email", "picture"
 		FROM "user"
 		WHERE "id"=$1
 		LIMIT 1
@@ -209,7 +209,7 @@ func (u *User) SelectPasswordById() bool {
 
 func (u *User) SelectPasswordByEmail() bool {
 	Connect()
-	
+
 	if err := util.IsEmail(u.Email); err != nil {
 		panic(err)
 	}
