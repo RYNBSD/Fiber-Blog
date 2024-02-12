@@ -21,6 +21,7 @@ func SignUp(c *fiber.Ctx) error {
 	if len(message) > 0 {
 		return fiber.NewError(fiber.StatusBadRequest, message)
 	}
+	util.EscapeStrings(&body.Username, &body.Password)
 
 	user := model.User{
 		Username: body.Username,
@@ -33,7 +34,6 @@ func SignUp(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Email already exists")
 	}
 
-	util.EscapeStrings(&body.Username, &body.Password)
 	picture, err := c.FormFile("picture")
 	if err != nil {
 		panic(err)
