@@ -19,8 +19,6 @@ import (
 	//"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
-// TODO: Fix html escape
-
 func main() {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
