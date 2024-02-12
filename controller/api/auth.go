@@ -94,6 +94,19 @@ func SignIn(c *fiber.Ctx) error {
 		panic(err)
 	}
 
+	jwt, err := util.SignJwt(user.Id)
+	if err != nil {
+		panic(err)
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name: "jwt",
+		Value: jwt,
+		Path: "/",
+		Secure: false,
+		HTTPOnly: false,
+		SameSite: "strict",
+	})
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"user": user,
 	})
