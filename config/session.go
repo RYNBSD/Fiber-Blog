@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/gob"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -16,6 +17,14 @@ func GetSession(c *fiber.Ctx) *session.Session {
 	}
 
 	return session
+}
+
+func GetUserSession(session *session.Session) (User, error) {
+	user, ok := session.Get(USER).(User)
+	if !ok {
+		return User{}, fmt.Errorf("empty user session")
+	}
+	return user, nil
 }
 
 func InitGob() {
